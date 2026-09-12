@@ -53,6 +53,11 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
+        if($request->active){
+            $user->active = 1;
+        }else{
+           $user->active =0; 
+        }
         $user->role_id = $request->role_id;
         $user->password = Hash::make($request->password);
 

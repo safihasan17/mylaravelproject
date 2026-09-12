@@ -104,7 +104,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        
+
                                         @foreach ($users as $item)
                                             <tr>
 
@@ -117,13 +117,12 @@
                                                 <td class="d-none d-sm-table-cell text-center">{{ $item->role->name }}</td>
                                                 <td class="d-none d-sm-table-cell text-center">{{ $item->email }}</td>
                                                 <td class="d-none d-sm-table-cell text-center">{{ $item->phone }}</td>
-                                                <td class="text-center"><span class="badge bg-success">
-                                                        @if ($item->active)
-                                                            <span class="badge bg-success">Active</span>
-                                                        @else
-                                                            <span class="badge bg-danger">Inactive</span>
-                                                        @endif
-                                                    </span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge border {{ $item->active == 1 ? 'border-success text-success' : 'border-danger text-danger' }}">
+                                                        {{ $item->active == 1 ? 'Active' : 'Inactive' }}
+                                                    </span>
+                                                </td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
 

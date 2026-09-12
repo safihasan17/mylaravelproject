@@ -58,11 +58,11 @@
                                  <x-admin.error-msg name="phone" />
                              </div>
                              <div class="col-md-6 mb-4">
-                                 <label class="form-label" for="us-status">Status</label>
-                                 <select class="form-select" name="active">
-                                     <option>Active</option>
-                                     <option>Inactive</option>
-                                 </select>
+                                 <div class="form-switch-custom">
+                                     <input class="form-switch-input-custom" type="checkbox" id="switchOne" checked=""
+                                         name="active">
+                                     <label class="form-switch-label" for="switchOne">Active</label>
+                                 </div>
                              </div>
                          </div>
                          <div class="row">
@@ -70,7 +70,7 @@
                                  <label class="form-label" for="us-pass">Password</label>
                                  <input type="password" class="form-control" name="password"
                                      placeholder="Leave blank to keep unchanged">
-                                <x-admin.error-msg name="password" />
+                                 <x-admin.error-msg name="password" />
                              </div>
                              <div class=" col-12 col-md-6 mb-4">
                                  <label class="form-label" for="us-pass2">Confirm Password</label>

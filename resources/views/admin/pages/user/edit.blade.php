@@ -46,7 +46,7 @@
                                  <select class="form-select" name="role_id">
                                      <option value="0"  disabled>Select a Role</option>
                                      @foreach ($roles as $item)
-                                         <option value="{{ $item->id }}" @selected(old('role_id') == $item->id)>
+                                         <option value="{{ $item->id }}" @selected($user->role_id == $item->id)>
                                              {{ $item->name }}</option>
                                      @endforeach
 

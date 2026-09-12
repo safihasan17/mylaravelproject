@@ -1,15 +1,15 @@
 @extends('admin.layouts.master')
 
-@section('title', 'users')
+@section('title', 'patients')
 
 @section('content')
     <main id="main-container">
 
         <div class="content">
-            <x-admin.phead title="users" subtitle="Mange table from this page">
+            <x-admin.phead title="Patients" subtitle="Manage patient records and medical histories">
 
-                <a href="{{ route('users.create') }}" type="button" class="btn btn-sm btn-primary">
-                    <i class="fa fa-plus opacity-50 me-1"></i> Add User
+                <a href="{{ route('patients.create') }}" type="button" class="btn btn-sm btn-primary">
+                    <i class="fa fa-plus opacity-50 me-1"></i> Add Patient
                 </a>
 
             </x-admin.phead>
@@ -22,43 +22,33 @@
             @endif
 
             <div class="row items-push">
-                <div class="col-6 col-lg-3">
+                <div class="col-6 col-lg-4">
                     <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
                         <div class="block-content block-content-full">
-                            <div class="fs-2 fw-semibold text-primary">{{ $totalUsers }}</div>
+                            <div class="fs-2 fw-semibold text-primary">{{ $totalPatients }}</div>
                         </div>
                         <div class="block-content py-2 bg-body-light">
-                            <p class="fw-medium fs-sm text-muted mb-0">Total System Users</p>
+                            <p class="fw-medium fs-sm text-muted mb-0">Total Patients</p>
                         </div>
                     </a>
                 </div>
-                <div class="col-6 col-lg-3">
-                    <a class="block block-rounded block-link-shadow text-center" href="hm_roles.html">
+                <div class="col-6 col-lg-4">
+                    <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
                         <div class="block-content block-content-full">
-                            <div class="fs-2 fw-semibold text-info">{{ $totalRoles }}</div>
+                            <div class="fs-2 fw-semibold text-info">{{ $newThisMonth }}</div>
                         </div>
                         <div class="block-content py-2 bg-body-light">
-                            <p class="fw-medium fs-sm text-muted mb-0">Roles Defined</p>
+                            <p class="fw-medium fs-sm text-muted mb-0">New This Month</p>
                         </div>
                     </a>
                 </div>
-                <div class="col-6 col-lg-3">
+                <div class="col-6 col-lg-4">
                     <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
                         <div class="block-content block-content-full">
-                            <div class="fs-2 fw-semibold text-success">{{ $activeUsers }}</div>
+                            <div class="fs-2 fw-semibold text-success">{{ $totalGuardians }}</div>
                         </div>
                         <div class="block-content py-2 bg-body-light">
-                            <p class="fw-medium fs-sm text-muted mb-0">Active</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
-                        <div class="block-content block-content-full">
-                            <div class="fs-2 fw-semibold text-danger">{{ $inactiveUsers }}</div>
-                        </div>
-                        <div class="block-content py-2 bg-body-light">
-                            <p class="fw-medium fs-sm text-muted mb-0">Inactive</p>
+                            <p class="fw-medium fs-sm text-muted mb-0">With Guardian Info</p>
                         </div>
                     </a>
                 </div>
@@ -69,74 +59,51 @@
                 <div class="col-lg-12">
                     <div class="block block-rounded h-100">
                         <div class="block-header block-header-default">
-                            <h3 class="block-title">System Users</h3>
-                            <div class="block-options">
-                                <div class="dropdown">
-                                    <button type="button" class="btn-block-option" id="dropdown-filters-users"
-                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Filters <i class="fa fa-angle-down ms-1"></i>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-filters-users">
-                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                            href="javascript:void(0)">Active <span
-                                                class="badge bg-success rounded-pill">52</span></a>
-                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                            href="javascript:void(0)">Suspended <span
-                                                class="badge bg-danger rounded-pill">6</span></a>
-                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                            href="javascript:void(0)">All <span
-                                                class="badge bg-primary rounded-pill">58</span></a>
-                                    </div>
-                                </div>
-                            </div>
+                            <h3 class="block-title">All Patients</h3>
                         </div>
                         <div class="block-content block-content-full">
                             <div class="table-responsive">
                                 <table class="table table-striped table-vcenter">
                                     <thead>
                                         <tr>
-                                            <th class="fs-sm">Name</th>
-                                            <th class="d-none d-sm-table-cell text-center fs-sm">Role</th>
-                                            <th class="d-none d-md-table-cell text-center fs-sm">Email</th>
+                                            <th class="fs-sm">Patient</th>
+                                            <th class="d-none d-sm-table-cell text-center fs-sm">Age / Gender</th>
+                                            <th class="d-none d-sm-table-cell text-center fs-sm">Blood Group</th>
                                             <th class="d-none d-md-table-cell text-center fs-sm">Phone</th>
-                                            <th class="text-center fs-sm">Status</th>
+                                            <th class="d-none d-xl-table-cell text-center fs-sm">Guardian</th>
                                             <th class="text-center fs-sm" style="width: 110px;">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
 
-                                        @foreach ($users as $item)
+                                        @foreach ($patients as $item)
                                             <tr>
 
                                                 <td>
-                                                    <div>{{ $item->id }}</div>
-                                                    <a class="fw-semibold" href="javascript:void(0)">{{ $item->name }}</a>
-
-
+                                                    <a class="fw-semibold"
+                                                        href="{{ route('patients.show', $item->id) }}">{{ $item->name }}</a>
                                                 </td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->role->name }}</td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->email }}</td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->phone }}</td>
-                                                <td>
-                                                    <span
-                                                        class="badge border {{ $item->active == 1 ? 'border-success text-success' : 'border-danger text-danger' }}">
-                                                        {{ $item->active == 1 ? 'Active' : 'Inactive' }}
-                                                    </span>
+                                                <td class="d-none d-sm-table-cell text-center">
+                                                    {{ $item->gender }}{{ $item->dob ? ', ' . $item->dob->age : '' }}
                                                 </td>
+                                                <td class="d-none d-sm-table-cell text-center">{{ $item->blood_group ?? '-' }}</td>
+                                                <td class="d-none d-md-table-cell text-center">{{ $item->phone }}</td>
+                                                <td class="d-none d-xl-table-cell text-center fs-sm">{{ $item->guardian_name ?? 'N/A' }}</td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
 
-                                                        <a href="{{ route('users.show', $item->id) }}"
+                                                        <a href="{{ route('patients.show', $item->id) }}"
                                                             class="btn btn-sm btn-outline-primary rounded" title="View">
                                                             <i class="fa fa-eye"></i>
                                                         </a>
 
-                                                        <a href="{{ route('users.edit', ['user' => $item->id]) }}"
+                                                        <a href="{{ route('patients.edit', ['patient' => $item->id]) }}"
                                                             class="btn btn-sm btn-outline-warning rounded" title="Edit">
                                                             <i class="fa fa-pencil-alt"></i>
                                                         </a>
 
-                                                        <button type="button" class="btn btn-sm btn-outline-warning rounded table-btn-action delete"
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-warning rounded table-btn-action delete"
                                                             data-id="{{ $item->id }}" data-name="{{ $item->name }}"
                                                             title="Delete row" data-bs-toggle="modal"
                                                             data-bs-target="#modalDelete">
@@ -164,10 +131,10 @@
 
     {{-- modal --}}
 
-    <x-admin.modal id="modalDelete" title="Delete User">
+    <x-admin.modal id="modalDelete" title="Delete Patient">
         <div class="text-center">
             <i class="bi bi-trash fs-1 text-danger"></i> <br>
-            <p> Are you sure you ant to Delete this User</p>
+            <p> Are you sure you want to Delete this Patient</p>
             <span class="name fw-bold badge border border-danger text-danger py-2 px-3"></span>
 
             <hr>
@@ -193,11 +160,10 @@ document.querySelectorAll('.delete').forEach(button=>{
     button.addEventListener('click', function(){
         let id = this.dataset.id;
         let name = this.dataset.name;
-        // alert(id);
 
         document.querySelector('#modalDelete .name').innerText = name;
-        document.querySelector('#modalDelete form').action = `{{ route('users.destroy' , ['user'=>':id']) }}` .replace(':id', id);
-        
+        document.querySelector('#modalDelete form').action = `{{ route('patients.destroy' , ['patient'=>':id']) }}` .replace(':id', id);
+
     })
 })
 </script>

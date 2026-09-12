@@ -25,7 +25,7 @@
 
              <div class="card mt-3">
                  <div class="card-body">
-                     <form action="{{ route('users.update', ['id' => $user->id]) }}" method="POST">
+                     <form action="{{ route('users.update', ['user' => $user->id]) }}" method="POST">
                          @csrf
                          @method('PUT')
                          <div class="row">
@@ -59,11 +59,11 @@
                                  <x-admin.error-msg name="phone" />
                              </div>
                              <div class="col-md-6 mb-4">
-                                 <label class="form-label" for="us-status">Status</label>
-                                 <select class="form-select" name="active">
-                                     <option>Active</option>
-                                     <option>Inactive</option>
-                                 </select>
+                                 <div class="form-switch-custom">
+                                     <input class="form-switch-input-custom" type="checkbox" id="switchOne" {{$user->active==1 ? 'checked' : ''}}
+                                         name="active">
+                                     <label class="form-switch-label" for="switchOne">Active</label>
+                                 </div>
                              </div>
                          </div>
                         

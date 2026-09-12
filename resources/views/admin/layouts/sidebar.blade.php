@@ -139,17 +139,12 @@
                     </a>
                 </li>
                 <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_patients.html">
+                    <a class="nav-main-link" href="{{ route('patients.index') }}">
                         <i class="nav-main-link-icon fa fa-user-injured"></i>
                         <span class="nav-main-link-name">Patients</span>
                     </a>
                 </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_patient_form.html">
-                        <i class="nav-main-link-icon fa fa-user-plus"></i>
-                        <span class="nav-main-link-name">Add / Edit Patient</span>
-                    </a>
-                </li>
+ 
                 <li class="nav-main-item">
                     <a class="nav-main-link" href="hm_doctors.html">
                         <i class="nav-main-link-icon fa fa-user-md"></i>

@@ -14,8 +14,17 @@ class UserController extends Controller
      */
     public function index()
     {
+        $totalUsers = User::count();
+
+        $totalRoles = Role::count();
+
+        $activeUsers = User::where('active', 1)->count();
+
+        $inactiveUsers = User::where('active', 0)->count();
+
+       
         $users = User::with('role')->orderby('id', 'desc')->get();
-        return view('admin.pages.user.index', compact('users'));
+        return view('admin.pages.user.index', compact('users', 'totalUsers', 'totalRoles', 'activeUsers', 'inactiveUsers'));
     }
 
     /**
@@ -53,10 +62,10 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
-        if($request->active){
+        if ($request->active) {
             $user->active = 1;
-        }else{
-           $user->active =0; 
+        } else {
+            $user->active = 0;
         }
         $user->role_id = $request->role_id;
         $user->password = Hash::make($request->password);
@@ -93,7 +102,7 @@ class UserController extends Controller
         $roles = Role::all();
         $user = User::find($id);
         // dd($user);
-        return view('admin.pages.user.edit', compact('roles','user'));
+        return view('admin.pages.user.edit', compact('roles', 'user'));
     }
 
     /**
@@ -103,13 +112,13 @@ class UserController extends Controller
     {
         // dd($request->all());
         $request->validate([
-            'name'=>'required|min:3|max:100',
-            'email'=>"required|email|unique:users,email,$id",
-            'role_id'=>'required',
-            'phone'=>'required'
+            'name' => 'required|min:3|max:100',
+            'email' => "required|email|unique:users,email,$id",
+            'role_id' => 'required',
+            'phone' => 'required'
         ]);
 
-        
+
         $user        = User::find($id);
         $user->name = $request->name;
         $user->email = $request->email;
@@ -118,20 +127,15 @@ class UserController extends Controller
         $user->save();
 
 
-        if($user->save()){
+        if ($user->save()) {
             return redirect()
-            ->route('users.index')
-            ->with('success','user updated successfully');
-
-        }else{
+                ->route('users.index')
+                ->with('success', 'user updated successfully');
+        } else {
             return redirect()
-            ->route('users.create')
-            ->with('error','user not updated');
+                ->route('users.create')
+                ->with('error', 'user not updated');
         }
-
-
-
-
     }
 
     /**
@@ -139,6 +143,11 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // dd($id);
+        User::destroy($id);
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'user deleted successfully');
     }
 }

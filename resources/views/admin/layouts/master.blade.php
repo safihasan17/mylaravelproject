@@ -78,6 +78,7 @@
         webpack is putting everything together at assets/_js/main/app.js
     -->
   <script src="{{ asset('assets/js/oneui.app.min.js') }}"></script>
+  @yield('script')
 </body>
 
 </html>

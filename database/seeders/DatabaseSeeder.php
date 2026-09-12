@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Patient;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -23,16 +24,20 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        Role::factory()->createMany([
-            ['name' => 'Super Admin'],
-            ['name' => 'Doctor'],
-            ['name' => 'Receptionist'],
-            ['name' => 'Pharmacist'],
-            ['name' => 'Lab Technician'],
-            ['name' => 'Accountant'],
-        ]);
+        // Role::factory()->createMany([
+        //     ['name' => 'Super Admin'],
+        //     ['name' => 'Doctor'],
+        //     ['name' => 'Receptionist'],
+        //     ['name' => 'Pharmacist'],
+        //     ['name' => 'Lab Technician'],
+        //     ['name' => 'Accountant'],
+        // ]);
 
 
-        User::factory(30)->create();
+        // User::factory(30)->create();
+
+        Patient::factory(30)->create();
+
+
     }
 }

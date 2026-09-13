@@ -146,7 +146,7 @@
                 </li>
  
                 <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_doctors.html">
+                    <a class="nav-main-link" href="{{ route('doctors.index') }}">
                         <i class="nav-main-link-icon fa fa-user-md"></i>
                         <span class="nav-main-link-name">Doctors</span>
                     </a>

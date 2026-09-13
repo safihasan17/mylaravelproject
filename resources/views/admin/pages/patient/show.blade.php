@@ -63,9 +63,9 @@
                         </div>
                     </div>
 
-                    <a class="btn btn-alt-primary w-100" href="{{ route('appointments.create', ['patient' => $patient->id]) }}">
+                    {{-- <a class="btn btn-alt-primary w-100" href="{{ route('appointments.create', ['patient' => $patient->id]) }}">
                         <i class="fa fa-calendar-plus me-1"></i> Book New Appointment
-                    </a>
+                    </a> --}}
                 </div>
 
                 <!-- Right: Details -->
@@ -116,10 +116,6 @@
                                             <td>{{ $patient->guardian_name ?? 'N/A' }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-semibold">Registered By</td>
-                                            <td>{{ $patient->creator->name ?? '-' }}</td>
-                                        </tr>
-                                        <tr>
                                             <td class="fw-semibold">Registered At</td>
                                             <td>{{ $patient->created_at?->format('d M Y, h:i A') ?? '-' }}</td>
                                         </tr>
@@ -132,37 +128,37 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="block block-rounded">
-                        <div class="block-header block-header-default">
-                            <h3 class="block-title">Medical History</h3>
-                        </div>
-                        <div class="block-content block-content-full">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-vcenter">
-                                    <thead>
+                </div>
+                 
+                <div class="block block-rounded">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Medical History</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-vcenter">
+                                <thead>
+                                    <tr>
+                                        <th class="fs-sm">Condition / Disease</th>
+                                        <th class="fs-sm">Allergy</th>
+                                        <th class="fs-sm">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($patient->medicalHistories ?? [] as $history)
                                         <tr>
-                                            <th class="fs-sm">Condition / Disease</th>
-                                            <th class="fs-sm">Allergy</th>
-                                            <th class="fs-sm">Notes</th>
+                                            <td>{{ $history->condition }}</td>
+                                            <td>{{ $history->allergy ?? '&mdash;' }}</td>
+                                            <td class="fs-sm text-muted">{{ $history->notes }}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($patient->medicalHistories ?? [] as $history)
-                                            <tr>
-                                                <td>{{ $history->condition }}</td>
-                                                <td>{{ $history->allergy ?? '&mdash;' }}</td>
-                                                <td class="fs-sm text-muted">{{ $history->notes }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="3" class="text-center text-muted">No medical history
-                                                    recorded yet.</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">No medical history
+                                                recorded yet.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

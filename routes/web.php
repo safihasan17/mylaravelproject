@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -32,3 +33,4 @@ Route::get('/login', function () {
 
 Route::resource('users', Usercontroller::class);
 Route::resource('patients', PatientController::class);
+Route::resource('doctors', DoctorController::class);

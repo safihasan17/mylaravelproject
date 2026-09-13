@@ -5,9 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['name', 'dob','gender', 'blood_group','address', 'phone', 'guardian_name', 'emergency_contact','created_by'])]
+#[Fillable([
+    'name',
+    'dob',
+    'gender',
+    'blood_group',
+    'address',
+    'phone',
+    'guardian_name',
+    'emergency_contact',
+])]
 class Patient extends Model
 {
     /** @use HasFactory<\Database\Factories\PatientFactory> */
@@ -23,13 +31,5 @@ class Patient extends Model
         return [
             'dob' => 'date',
         ];
-    }
-
-    /**
-     * The staff/user who registered this patient.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 }

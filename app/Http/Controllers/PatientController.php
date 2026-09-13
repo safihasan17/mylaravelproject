@@ -7,12 +7,10 @@ use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
-        $patients = Patient::latest()->get();
+        $patients = Patient::latest()->paginate(15);
 
         $totalPatients = Patient::count();
         $newThisMonth = Patient::whereMonth('created_at', now()->month)
@@ -41,7 +39,22 @@ class PatientController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'dob' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:Male,Female,Other',
+            'blood_group' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'phone' => 'nullable|string|max:20',
+            'emergency_contact' => 'nullable|string|max:20',
+            'guardian_name' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+        ]);
+
+        Patient::create($validated);
+
+        return redirect()
+            ->route('patients.index')
+            ->with('success', 'Patient added successfully.');
     }
 
     /**
@@ -49,7 +62,7 @@ class PatientController extends Controller
      */
     public function show(Patient $patient)
     {
-        //
+        return view('admin.pages.patient.show', compact('patient'));
     }
 
     /**
@@ -57,7 +70,7 @@ class PatientController extends Controller
      */
     public function edit(Patient $patient)
     {
-        //
+        return view('admin.pages.patient.edit', compact('patient'));
     }
 
     /**
@@ -65,7 +78,22 @@ class PatientController extends Controller
      */
     public function update(Request $request, Patient $patient)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'dob' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:Male,Female,Other',
+            'blood_group' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'phone' => 'nullable|string|max:20',
+            'emergency_contact' => 'nullable|string|max:20',
+            'guardian_name' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+        ]);
+
+        $patient->update($validated);
+
+        return redirect()
+            ->route('patients.index')
+            ->with('success', 'Patient updated successfully.');
     }
 
     /**
@@ -73,6 +101,10 @@ class PatientController extends Controller
      */
     public function destroy(Patient $patient)
     {
-        //
+        $patient->delete();
+
+        return redirect()
+            ->route('patients.index')
+            ->with('success', 'Patient deleted successfully.');
     }
 }

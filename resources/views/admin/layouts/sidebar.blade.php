@@ -152,7 +152,7 @@
                     </a>
                 </li>
                 <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_appointments.html">
+                    <a class="nav-main-link" href="{{ route('appointments.index') }}">
                         <i class="nav-main-link-icon fa fa-calendar-check"></i>
                         <span class="nav-main-link-name">Appointments</span>
                     </a>

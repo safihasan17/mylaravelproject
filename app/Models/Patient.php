@@ -32,4 +32,9 @@ class Patient extends Model
             'dob' => 'date',
         ];
     }
+
+     public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

@@ -11,9 +11,7 @@ use Illuminate\Http\Request;
 
 class PrescriptionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
         $prescriptions = Prescription::with(['patient', 'doctor.user'])
@@ -34,9 +32,7 @@ class PrescriptionController extends Controller
         ));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
         $patients = Patient::orderBy('name')->get();
@@ -47,9 +43,7 @@ class PrescriptionController extends Controller
         return view('admin.pages.prescription.create', compact('patients', 'doctors', 'appointments', 'medicines'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -76,9 +70,7 @@ class PrescriptionController extends Controller
             ->with('success', 'Prescription saved successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(Prescription $prescription)
     {
         $prescription->load([
@@ -92,9 +84,7 @@ class PrescriptionController extends Controller
         return view('admin.pages.prescription.show', compact('prescription'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(Prescription $prescription)
     {
         $prescription->load('prescriptionMedicines.medicine');
@@ -109,9 +99,7 @@ class PrescriptionController extends Controller
         ));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+   
     public function update(Request $request, Prescription $prescription)
     {
         $validated = $request->validate([
@@ -129,7 +117,7 @@ class PrescriptionController extends Controller
 
         $prescription->update(collect($validated)->except('medicines')->toArray());
 
-        // Replace the medicine list with whatever was submitted this time
+       
         $prescription->prescriptionMedicines()->delete();
         foreach ($validated['medicines'] ?? [] as $row) {
             $prescription->prescriptionMedicines()->create($row);
@@ -140,9 +128,7 @@ class PrescriptionController extends Controller
             ->with('success', 'Prescription updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+   
     public function destroy(Prescription $prescription)
     {
         $prescription->delete();

@@ -48,17 +48,13 @@ class Prescription extends Model
         return $this->belongsTo(Appointment::class);
     }
 
-    /**
-     * Raw prescription_medicines rows (with dosage/duration/instructions).
-     */
+   
     public function prescriptionMedicines(): HasMany
     {
         return $this->hasMany(PrescriptionMedicine::class);
     }
 
-    /**
-     * Medicines attached to this prescription, with pivot details.
-     */
+   
     public function medicines(): BelongsToMany
     {
         return $this->belongsToMany(Medicine::class, 'prescription_medicines')

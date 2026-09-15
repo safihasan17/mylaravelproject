@@ -5,7 +5,10 @@ namespace Database\Seeders;
 use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
+use App\Models\Medicine;
 use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\PrescriptionMedicine;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -55,6 +58,10 @@ class DatabaseSeeder extends Seeder
         // Doctor::factory(30)->create();
 
         // Appointment::factory(30)->create();
+
+        // Prescription::factory(30)->create();
+        Medicine::factory(30)->create();
+        PrescriptionMedicine::factory(30)->create();
 
 
     }

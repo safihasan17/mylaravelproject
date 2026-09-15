@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
 
         // Doctor::factory(30)->create();
 
-        Appointment::factory(30)->create();
+        // Appointment::factory(30)->create();
 
 
     }

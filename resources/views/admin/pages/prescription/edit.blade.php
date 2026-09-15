@@ -154,53 +154,55 @@
  @endsection
 
  @section('script')
-     <script>
-         (function () {
-             const container = document.getElementById('medicine-rows');
-             const template = document.getElementById('medicine-row-template');
-             let rowIndex = 0;
+    @php
+        $existingRows = $prescription->prescriptionMedicines->map(fn ($row) => [
+            'medicine_id' => $row->medicine_id,
+            'dosage' => $row->dosage,
+            'duration' => $row->duration,
+            'instructions' => $row->instructions,
+        ]);
+    @endphp
 
-             // Existing medicines from the database, passed in as JSON
-             const existingRows = @json(
-                 $prescription->prescriptionMedicines->map(fn ($row) => [
-                     'medicine_id' => $row->medicine_id,
-                     'dosage' => $row->dosage,
-                     'duration' => $row->duration,
-                     'instructions' => $row->instructions,
-                 ])
-             );
+    <script>
+        (function () {
+            const container = document.getElementById('medicine-rows');
+            const template = document.getElementById('medicine-row-template');
+            let rowIndex = 0;
 
-             function addRow(data = null) {
-                 const html = template.innerHTML.replaceAll('__INDEX__', rowIndex);
-                 const wrapper = document.createElement('div');
-                 wrapper.innerHTML = html.trim();
-                 const row = wrapper.firstElementChild;
+           
+            const existingRows = @json($existingRows);
 
-                 if (data) {
-                     row.querySelector('select[name*="[medicine_id]"]').value = data.medicine_id ?? '';
-                     row.querySelector('input[name*="[dosage]"]').value = data.dosage ?? '';
-                     row.querySelector('input[name*="[duration]"]').value = data.duration ?? '';
-                     row.querySelector('input[name*="[instructions]"]').value = data.instructions ?? '';
-                 }
+            function addRow(data = null) {
+                const html = template.innerHTML.replaceAll('__INDEX__', rowIndex);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html.trim();
+                const row = wrapper.firstElementChild;
 
-                 container.appendChild(row);
-                 rowIndex++;
-             }
+                if (data) {
+                    row.querySelector('select[name*="[medicine_id]"]').value = data.medicine_id ?? '';
+                    row.querySelector('input[name*="[dosage]"]').value = data.dosage ?? '';
+                    row.querySelector('input[name*="[duration]"]').value = data.duration ?? '';
+                    row.querySelector('input[name*="[instructions]"]').value = data.instructions ?? '';
+                }
 
-             document.getElementById('add-medicine-row').addEventListener('click', () => addRow());
+                container.appendChild(row);
+                rowIndex++;
+            }
 
-             container.addEventListener('click', function (e) {
-                 const btn = e.target.closest('.remove-medicine-row');
-                 if (btn) {
-                     btn.closest('.medicine-row').remove();
-                 }
-             });
+            document.getElementById('add-medicine-row').addEventListener('click', () => addRow());
 
-             if (existingRows.length > 0) {
-                 existingRows.forEach(row => addRow(row));
-             } else {
-                 addRow();
-             }
-         })();
-     </script>
- @endsection
+            container.addEventListener('click', function (e) {
+                const btn = e.target.closest('.remove-medicine-row');
+                if (btn) {
+                    btn.closest('.medicine-row').remove();
+                }
+            });
+
+            if (existingRows.length > 0) {
+                existingRows.forEach(row => addRow(row));
+            } else {
+                addRow();
+            }
+        })();
+    </script>
+@endsection

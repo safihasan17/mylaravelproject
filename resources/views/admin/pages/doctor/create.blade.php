@@ -25,13 +25,13 @@
 
              <div class="card mt-3">
                  <div class="card-body">
-                     <form action="{{ route('doctors.store') }}" method="POST">
+                     <form action="{{ route('doctors.store') }}" method="POST"  enctype='multipart/form-data'>
                          @csrf
                          <div class="row">
                              <div class="col-md-6 mb-4">
-                                 <label class="form-label" for="dr-user">User Account</label>
+                                 <label class="form-label" for="dr-user">Doctors</label>
                                  <select class="form-select" name="user_id">
-                                     <option value="" selected disabled>Select a user</option>
+                                     <option value="" selected disabled>Select  Doctor</option>
                                      @foreach ($users as $user)
                                          <option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>
                                              {{ $user->name }} ({{ $user->email }})</option>
@@ -66,11 +66,17 @@
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-md-12 mb-4">
+                             <div class="col-md-6 mb-4">
                                  <label class="form-label" for="dr-qual">Qualification</label>
                                  <input type="text" class="form-control" name="qualification"
                                      value="{{ old('qualification') }}" placeholder="e.g. MBBS, MD (Cardiology)">
                                  <x-admin.error-msg name="qualification" />
+                             </div>
+                              <div class="col-md-6 mb-4">
+                                 <label class="form-label" for="dr-qual">Image</label>
+                                 <input type="file" class="form-control" name="image"
+                                     value="{{ old('image') }}" placeholder="">
+                                 <x-admin.error-msg name="image" />
                              </div>
                          </div>
 

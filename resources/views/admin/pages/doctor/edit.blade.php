@@ -25,7 +25,7 @@
 
              <div class="card mt-3">
                  <div class="card-body">
-                     <form action="{{ route('doctors.update', ['doctor' => $doctor->id]) }}" method="POST">
+                     <form action="{{ route('doctors.update', ['doctor' => $doctor->id]) }}" method="POST" enctype='multipart/form-data'>
                          @csrf
                          @method('PUT')
                          <div class="row">
@@ -70,12 +70,18 @@
                              </div>
                          </div>
                          <div class="row">
-                             <div class="col-md-12 mb-4">
+                             <div class="col-md-6 mb-4">
                                  <label class="form-label" for="dr-qual">Qualification</label>
                                  <input type="text" class="form-control" name="qualification"
                                      value="{{ old('qualification', $doctor->qualification) }}"
                                      placeholder="e.g. MBBS, MD (Cardiology)">
                                  <x-admin.error-msg name="qualification" />
+                             </div>
+                             <div class="col-md-6 mb-4">
+                                 <label class="form-label" for="dr-qual">Image</label>
+                                 <input type="file" class="form-control" name="image"
+                                     value="{{ old('image') }}" placeholder="">
+                                 <x-admin.error-msg name="image" />
                              </div>
                          </div>
 

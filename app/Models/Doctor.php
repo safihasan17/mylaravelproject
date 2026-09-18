@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'specialization',
     'qualification',
     'consultation_fee',
+    'image' 
 ])]
 class Doctor extends Model
 {

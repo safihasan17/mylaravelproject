@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('specialization', 100)->nullable();
             $table->string('qualification', 150)->nullable();
             $table->decimal('consultation_fee', 10, 2)->nullable();
+            $table->string('image')->nullable()->default(null);
             $table->timestamps();
         });
     }

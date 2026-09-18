@@ -31,6 +31,7 @@ class DoctorFactory extends Factory
                 'MBBS, MD', 'MBBS, MS', 'MBBS, FCPS', 'MBBS, DGO', 'MBBS',
             ]),
             'consultation_fee' => $this->faker->randomFloat(2, 500, 2000),
+            'image'=>null,
         ];
     }
 

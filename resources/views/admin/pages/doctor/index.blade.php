@@ -80,19 +80,28 @@
 
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <img class="img-avatar img-avatar48"
-                                                            src="{{ $item->user->avatar ?? asset('media/avatars/avatar10.jpg') }}"
-                                                            alt="{{ $item->user->name ?? '' }}">
+                                                        @if ($item->image)
+                                                            <img src="{{ $item->image }}" alt="" class="rounded-3"
+                                                                width="60" height="60">
+                                                        @else
+                                                            <img src="https://placehold.net/product-400x400.png"
+                                                                alt="" class="rounded-3" width="60"
+                                                                height="60">
+                                                        @endif
                                                         <div class="ms-3">
                                                             <a class="fw-semibold"
                                                                 href="{{ route('doctors.show', $item->id) }}">{{ $item->user->name ?? 'N/A' }}</a>
-                                                            <div class="fs-sm text-muted">{{ $item->qualification ?? '-' }}</div>
+                                                            <div class="fs-sm text-muted">{{ $item->qualification ?? '-' }}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->department->name ?? '-' }}</td>
-                                                <td class="d-none d-md-table-cell text-center">৳{{ number_format($item->consultation_fee ?? 0, 2) }}</td>
-                                                <td class="d-none d-xl-table-cell text-center fs-sm">{{ $item->user->email ?? '-' }}</td>
+                                                <td class="d-none d-sm-table-cell text-center">
+                                                    {{ $item->department->name ?? '-' }}</td>
+                                                <td class="d-none d-md-table-cell text-center">
+                                                    ৳{{ number_format($item->consultation_fee ?? 0, 2) }}</td>
+                                                <td class="d-none d-xl-table-cell text-center fs-sm">
+                                                    {{ $item->user->email ?? '-' }}</td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
 
@@ -108,9 +117,9 @@
 
                                                         <button type="button"
                                                             class="btn btn-sm btn-outline-warning rounded table-btn-action delete"
-                                                            data-id="{{ $item->id }}" data-name="{{ $item->user->name ?? '' }}"
-                                                            title="Delete row" data-bs-toggle="modal"
-                                                            data-bs-target="#modalDelete">
+                                                            data-id="{{ $item->id }}"
+                                                            data-name="{{ $item->user->name ?? '' }}" title="Delete row"
+                                                            data-bs-toggle="modal" data-bs-target="#modalDelete">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
 
@@ -152,8 +161,7 @@
                 @method('DELETE')
                 <button type="button" class="btn btn-outline-secondary" title="Delete row"
                     data-bs-dismiss="modal">cancel</button>
-                <button type="submit" class="btn  btn-danger" title="Delete row"
-                    data-bs-dismiss="modal">Delete</button>
+                <button type="submit" class="btn  btn-danger" title="Delete row" data-bs-dismiss="modal">Delete</button>
             </form>
 
         </div>
@@ -163,17 +171,18 @@
 
 @section('script')
 
-<script>
-document.querySelectorAll('.delete').forEach(button=>{
-    button.addEventListener('click', function(){
-        let id = this.dataset.id;
-        let name = this.dataset.name;
+    <script>
+        document.querySelectorAll('.delete').forEach(button => {
+            button.addEventListener('click', function() {
+                let id = this.dataset.id;
+                let name = this.dataset.name;
 
-        document.querySelector('#modalDelete .name').innerText = name;
-        document.querySelector('#modalDelete form').action = `{{ route('doctors.destroy' , ['doctor'=>':id']) }}` .replace(':id', id);
+                document.querySelector('#modalDelete .name').innerText = name;
+                document.querySelector('#modalDelete form').action =
+                    `{{ route('doctors.destroy', ['doctor' => ':id']) }}`.replace(':id', id);
 
-    })
-})
-</script>
+            })
+        })
+    </script>
 
 @endsection

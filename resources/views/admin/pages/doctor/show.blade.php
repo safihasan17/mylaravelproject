@@ -26,13 +26,17 @@
             @endif
 
             <div class="row">
-                <!-- Left: Profile Summary -->
+               
                 <div class="col-lg-4">
                     <div class="block block-rounded text-center">
                         <div class="block-content block-content-full">
-                            <img class="img-avatar img-avatar96 img-avatar-thumb mt-3"
-                                src="{{ $doctor->user->avatar ?? asset('media/avatars/avatar10.jpg') }}"
-                                alt="{{ $doctor->user->name ?? '' }}">
+                            @if ($doctor->image)
+                                <img src="{{ asset($doctor->image) }}" alt="" class="rounded-3" width="200"
+                                    height="200">
+                            @else
+                                <img src="https://placehold.net/product-400x400.png" alt="" class="rounded-3"
+                                    width="60" height="60">
+                            @endif
 
                             <div class="mt-3">
                                 <h4 class="mb-0">{{ $doctor->user->name ?? 'N/A' }}</h4>

@@ -88,6 +88,19 @@
                              <x-admin.error-msg name="medicines" />
                          </div>
 
+                         <div class="mb-4">
+                             <p class="fw-semibold mb-2">Lab Tests</p>
+
+                             <div id="labtest-rows">
+                                 {{-- rows injected here by JS --}}
+                             </div>
+
+                             <button type="button" class="btn btn-sm btn-alt-secondary" id="add-labtest-row">
+                                 <i class="fa fa-plus me-1"></i> Add Lab Test
+                             </button>
+                             <x-admin.error-msg name="lab_tests" />
+                         </div>
+
                          <div class="row">
                              <div class="col-md-12 mb-4">
                                  <label class="form-label" for="rx-notes">General Notes / Instructions
@@ -147,6 +160,29 @@
          </div>
      </template>
 
+     {{-- Hidden template row for Lab Tests --}}
+     <template id="labtest-row-template">
+         <div class="row g-2 mb-2 labtest-row align-items-start">
+             <div class="col-md-10">
+                 <select class="form-select" name="lab_tests[__INDEX__][test_id]">
+                     <option value="" selected disabled>Select lab test</option>
+                     @foreach ($labTests as $test)
+                         <option value="{{ $test->id }}">{{ $test->test_name }}
+                             @if ($test->category)
+                                 ({{ $test->category }})
+                             @endif
+                         </option>
+                     @endforeach
+                 </select>
+             </div>
+             <div class="col-md-2">
+                 <button type="button" class="btn btn-alt-secondary w-100 remove-labtest-row" title="Remove">
+                     <i class="fa fa-times"></i>
+                 </button>
+             </div>
+         </div>
+     </template>
+
  @endsection
 
  @section('script')
@@ -177,6 +213,32 @@
              addRow();
          })();
 
+         // Lab Tests dynamic rows
+         (function () {
+             const container = document.getElementById('labtest-rows');
+             const template = document.getElementById('labtest-row-template');
+             let rowIndex = 0;
+
+             function addRow() {
+                 const html = template.innerHTML.replaceAll('__INDEX__', rowIndex);
+                 const wrapper = document.createElement('div');
+                 wrapper.innerHTML = html.trim();
+                 container.appendChild(wrapper.firstElementChild);
+                 rowIndex++;
+             }
+
+             document.getElementById('add-labtest-row').addEventListener('click', addRow);
+
+             container.addEventListener('click', function (e) {
+                 const btn = e.target.closest('.remove-labtest-row');
+                 if (btn) {
+                     btn.closest('.labtest-row').remove();
+                 }
+             });
+
+             // Lab tests are optional — start with zero rows, doctor adds if needed
+         })();
+
          // Auto-select patient & doctor based on the chosen appointment
          (function () {
              const appointmentMap = @json(
@@ -200,7 +262,9 @@
 
              appointmentSelect.addEventListener('change', applySelection);
 
-             
+             // Run once on page load too — covers the case where
+             // ?appointment_id=... is already in the URL (e.g. coming
+             // from the "Add Prescription" button on the appointment page)
              if (appointmentSelect.value) {
                  applySelection();
              }

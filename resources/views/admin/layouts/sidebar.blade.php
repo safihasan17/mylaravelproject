@@ -176,7 +176,7 @@
                     </a>
                 </li>
                 <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_lab_tests.html">
+                    <a class="nav-main-link" href="{{ route('lab-test-orders.index') }}">
                         <i class="nav-main-link-icon fa fa-flask"></i>
                         <span class="nav-main-link-name">Lab Tests</span>
                     </a>

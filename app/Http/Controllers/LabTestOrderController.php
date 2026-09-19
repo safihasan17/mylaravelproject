@@ -24,7 +24,7 @@ class LabTestOrderController extends Controller
         $completedCount = LabTestOrder::where('status', 'Completed')->count();
         $cancelledCount = LabTestOrder::where('status', 'Cancelled')->count();
 
-        return view('admin.pages.lab_test_order.index', compact(
+        return view('admin.pages.lab-test-order.index', compact(
             'labTestOrders',
             'pendingCount',
             'inProgressCount',
@@ -42,7 +42,7 @@ class LabTestOrderController extends Controller
         $doctors = Doctor::with('user')->get();
         $labTests = LabTest::orderBy('test_name')->get();
 
-        return view('admin.pages.lab_test_order.create', compact('patients', 'doctors', 'labTests'));
+        return view('admin.pages.lab-test-order.create', compact('patients', 'doctors', 'labTests'));
     }
 
     /**
@@ -73,7 +73,7 @@ class LabTestOrderController extends Controller
     {
         $labTestOrder->load(['patient', 'doctor.user', 'doctor.department', 'test']);
 
-        return view('admin.pages.lab_test_order.show', compact('labTestOrder'));
+        return view('admin.pages.lab-test-order.show', compact('labTestOrder'));
     }
 
     /**
@@ -85,7 +85,7 @@ class LabTestOrderController extends Controller
         $doctors = Doctor::with('user')->get();
         $labTests = LabTest::orderBy('test_name')->get();
 
-        return view('admin.pages.lab_test_order.edit', compact('labTestOrder', 'patients', 'doctors', 'labTests'));
+        return view('admin.pages.lab-test-order.edit', compact('labTestOrder', 'patients', 'doctors', 'labTests'));
     }
 
     /**

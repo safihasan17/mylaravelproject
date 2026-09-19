@@ -127,9 +127,9 @@
                     <tbody>
                         <tr>
                             <td class="border-end border-dark align-top pt-3" style="height: 340px;">
-                                @php $tests = $prescription->labTests ?? collect(); @endphp
-                                @forelse ($tests as $test)
-                                    <div>{{ $loop->iteration }}. {{ $test->name ?? ($test->test_name ?? '-') }}</div>
+                                {{-- Lab tests come from lab_test_orders linked to this prescription --}}
+                                @forelse ($prescription->labTestOrders as $order)
+                                    <div>{{ $loop->iteration }}. {{ $order->test->test_name ?? '-' }}</div>
                                 @empty
                                     <div>No tests prescribed.</div>
                                 @endforelse

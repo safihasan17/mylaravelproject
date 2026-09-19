@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\LabTest;
+use App\Models\LabTestOrder;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
@@ -65,7 +66,8 @@ class DatabaseSeeder extends Seeder
         // PrescriptionMedicine::factory(30)->create();
 
 
-        LabTest::factory(20)->create();
+        LabTest::factory(12)->create();
+        LabTestOrder::factory(20)->create();
 
 
 

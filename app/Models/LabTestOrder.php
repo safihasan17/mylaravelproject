@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
+    'prescription_id',
     'patient_id',
     'doctor_id',
     'test_id',
@@ -30,6 +31,11 @@ class LabTestOrder extends Model
         return [
             'order_date' => 'date',
         ];
+    }
+
+    public function prescription(): BelongsTo
+    {
+        return $this->belongsTo(Prescription::class);
     }
 
     public function patient(): BelongsTo

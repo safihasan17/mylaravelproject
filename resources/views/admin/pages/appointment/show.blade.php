@@ -44,7 +44,12 @@
                             <i class="fa fa-calendar-check fs-1 text-{{ $statusColor }} mt-3"></i>
 
                             <div class="mt-3">
-                                <h4 class="mb-0">{{ $appointment->patient->name ?? 'N/A' }}</h4>
+                                <h4 class="mb-0">
+                                    <a href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}"
+                                        class="text-body" title="Add prescription for this patient">
+                                        {{ $appointment->patient->name ?? 'N/A' }}
+                                    </a>
+                                </h4>
                                 <p class="text-muted mb-1">with {{ $appointment->doctor->user->name ?? 'N/A' }}</p>
                                 <span class="badge bg-{{ $statusColor }}">{{ $appointment->status }}</span>
                             </div>
@@ -66,8 +71,13 @@
                         </div>
                     </div>
 
-                    <a class="btn btn-alt-primary w-100" href="{{ route('patients.show', $appointment->patient_id) }}">
+                    <a class="btn btn-alt-primary w-100 mb-2" href="{{ route('patients.show', $appointment->patient_id) }}">
                         <i class="fa fa-user me-1"></i> View Patient Profile
+                    </a>
+
+                    <a class="btn btn-primary w-100"
+                        href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}">
+                        <i class="fa fa-file-prescription me-1"></i> Add Prescription
                     </a>
                 </div>
 
@@ -83,7 +93,11 @@
                                     <tbody>
                                         <tr>
                                             <td class="fw-semibold" style="width: 200px;">Patient</td>
-                                            <td>{{ $appointment->patient->name ?? 'N/A' }}</td>
+                                            <td>
+                                                <a href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}">
+                                                    {{ $appointment->patient->name ?? 'N/A' }}
+                                                </a>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">Doctor</td>

@@ -133,7 +133,7 @@
 
                 <li class="nav-main-heading">Hospital Management</li>
                 <li class="nav-main-item">
-                    <a class="nav-main-link active" href="/dashboard">
+                    <a class="nav-main-link active" href="{{ route('dashboard') }}">
                         <i class="nav-main-link-icon fa fa-heartbeat"></i>
                         <span class="nav-main-link-name">Dashboard</span>
                     </a>

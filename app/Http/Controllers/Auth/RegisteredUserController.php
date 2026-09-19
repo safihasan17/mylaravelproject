@@ -20,7 +20,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        return view('admin.pages.auth.register');
     }
 
     /**
@@ -39,6 +39,7 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'role_id'=>2,
             'password' => Hash::make($request->password),
         ]);
 
@@ -46,6 +47,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // return redirect(route('login', absolute: false));
+         return redirect()->route('login')->with('success', 'Registration successfull');
     }
 }

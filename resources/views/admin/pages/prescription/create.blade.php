@@ -59,7 +59,8 @@
                                  <select class="form-select" name="appointment_id">
                                      <option value="">None</option>
                                      @foreach ($appointments as $appointment)
-                                         <option value="{{ $appointment->id }}" @selected(old('appointment_id') == $appointment->id)>
+                                         <option value="{{ $appointment->id }}"
+                                             @selected(old('appointment_id', request()->query('appointment_id')) == $appointment->id)>
                                              #{{ $appointment->id }} &mdash; {{ $appointment->patient->name ?? 'N/A' }}
                                              ({{ $appointment->appointment_date?->format('d M Y') }})</option>
                                      @endforeach
@@ -174,6 +175,35 @@
 
              // Start with one empty row
              addRow();
+         })();
+
+         // Auto-select patient & doctor based on the chosen appointment
+         (function () {
+             const appointmentMap = @json(
+                 $appointments->mapWithKeys(fn ($a) => [
+                     $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
+                 ])
+             );
+
+             const appointmentSelect = document.querySelector('select[name="appointment_id"]');
+             const patientSelect = document.querySelector('select[name="patient_id"]');
+             const doctorSelect = document.querySelector('select[name="doctor_id"]');
+
+             function applySelection() {
+                 const data = appointmentMap[appointmentSelect.value];
+
+                 if (data) {
+                     patientSelect.value = data.patient_id;
+                     doctorSelect.value = data.doctor_id;
+                 }
+             }
+
+             appointmentSelect.addEventListener('change', applySelection);
+
+             
+             if (appointmentSelect.value) {
+                 applySelection();
+             }
          })();
      </script>
  @endsection

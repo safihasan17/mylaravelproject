@@ -10,13 +10,10 @@
                          <!-- Sign In Block -->
                          <div class="block block-rounded mb-0">
                              <div class="block-header block-header-default">
-                                 <h3 class="block-title">Sign In</h3>
+                                 <h3 class="block-title">Create Account</h3>
                                  <div class="block-options">
-                                     <a class="btn-block-option fs-sm" href="op_auth_reminder.html">Forgot Password?</a>
-                                     <a class="btn-block-option" href="{{ route('register') }}" data-bs-toggle="tooltip"
-                                         data-bs-placement="left" title="New Account">
-                                         <i class="fa fa-user-plus"></i>
-                                     </a>
+                                     <a class="btn-block-option fs-sm" href="{{ route('login') }}">Sign In</a>
+                                     
                                  </div>
                              </div>
 
@@ -31,36 +28,39 @@
                                  <div class="p-sm-3 px-lg-4 px-xxl-5 py-lg-5">
                                      <p class=" h2 mb-1 text-center">welcome to Hospital Mangement</p>
                                      <p class="fw-medium text-muted">
-                                         Please login in to access your dashboard
+                                         Please fill the following details to create a new account.
                                      </p>
 
 
-                                     <form class="js-validation-signin" action="{{ route('login.store') }}" method="POST"
-                                         novalidate>
+                                     <form class="js-validation-signup" action="" method="POST"
+                                         novalidate="novalidate">
                                          @csrf
                                          <div class="py-3">
                                              <div class="mb-4">
-                                                 <input type="email" class="form-control form-control-alt form-control-lg"
-                                                     id="login-username" name="email" placeholder="example@gail.com">
+                                                 <input type="text" class="form-control form-control-lg form-control-alt"
+                                                     id="signup-username" name="name" placeholder="name">
+                                             </div>
+                                             <div class="mb-4">
+                                                 <input type="email" class="form-control form-control-lg form-control-alt"
+                                                     id="signup-email" name="email" placeholder="Email">
                                              </div>
                                              <div class="mb-4">
                                                  <input type="password"
-                                                     class="form-control form-control-alt form-control-lg"
-                                                     id="login-password" name="password" placeholder="Password">
+                                                     class="form-control form-control-lg form-control-alt"
+                                                     id="signup-password" name="password" placeholder="Password">
                                              </div>
                                              <div class="mb-4">
-                                                 <div class="form-check">
-                                                     <input class="form-check-input" type="checkbox" value=""
-                                                         id="login-remember" name="login-remember">
-                                                     <label class="form-check-label" for="login-remember">Remember
-                                                         Me</label>
-                                                 </div>
+                                                 <input type="password"
+                                                     class="form-control form-control-lg form-control-alt"
+                                                     id="signup-password-confirm" name="password_confirmation"
+                                                     placeholder="Confirm Password">
                                              </div>
+                                             
                                          </div>
                                          <div class="row mb-4">
                                              <div class="col-md-6 col-xl-5">
-                                                 <button type="submit" class="btn w-100 btn-alt-primary">
-                                                     <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Sign In
+                                                 <button type="submit" class="btn w-100 btn-alt-success">
+                                                     <i class="fa fa-fw fa-plus me-1 opacity-50"></i> Sign Up
                                                  </button>
                                              </div>
                                          </div>

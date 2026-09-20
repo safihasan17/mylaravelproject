@@ -46,8 +46,12 @@ class PrescriptionController extends Controller
         $medicines = Medicine::orderBy('name')->get();
         $labTests = LabTest::orderBy('test_name')->get();
 
+        $appointmentMap = $appointments->mapWithKeys(fn ($a) => [
+            $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
+        ]);
+
         return view('admin.pages.prescription.create', compact(
-            'patients', 'doctors', 'appointments', 'medicines', 'labTests'
+            'patients', 'doctors', 'appointments', 'medicines', 'labTests', 'appointmentMap'
         ));
     }
 
@@ -124,8 +128,25 @@ class PrescriptionController extends Controller
         $medicines = Medicine::orderBy('name')->get();
         $labTests = LabTest::orderBy('test_name')->get();
 
+        $appointmentMap = $appointments->mapWithKeys(fn ($a) => [
+            $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
+        ]);
+
+        $existingMedicineRows = $prescription->prescriptionMedicines->map(fn ($row) => [
+            'medicine_id' => $row->medicine_id,
+            'dosage' => $row->dosage,
+            'duration' => $row->duration,
+            'instructions' => $row->instructions,
+        ])->values();
+
+        $existingLabTestRows = $prescription->labTestOrders
+            ->where('status', 'Pending')
+            ->map(fn ($row) => ['test_id' => $row->test_id])
+            ->values();
+
         return view('admin.pages.prescription.edit', compact(
-            'prescription', 'patients', 'doctors', 'appointments', 'medicines', 'labTests'
+            'prescription', 'patients', 'doctors', 'appointments', 'medicines', 'labTests',
+            'appointmentMap', 'existingMedicineRows', 'existingLabTestRows'
         ));
     }
 

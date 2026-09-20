@@ -236,20 +236,27 @@
                  }
              });
 
-             // Lab tests are optional — start with zero rows, doctor adds if needed
+            
          })();
 
-         // Auto-select patient & doctor based on the chosen appointment
+         // Auto-select AND lock patient & doctor based on the chosen appointment
          (function () {
-             const appointmentMap = @json(
-                 $appointments->mapWithKeys(fn ($a) => [
-                     $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
-                 ])
-             );
+             const appointmentMap = @json($appointmentMap);
 
              const appointmentSelect = document.querySelector('select[name="appointment_id"]');
              const patientSelect = document.querySelector('select[name="patient_id"]');
              const doctorSelect = document.querySelector('select[name="doctor_id"]');
+             const form = document.getElementById('rx-form');
+
+             function lock(select) {
+                 select.setAttribute('disabled', 'disabled');
+                 select.classList.add('bg-body-light');
+             }
+
+             function unlock(select) {
+                 select.removeAttribute('disabled');
+                 select.classList.remove('bg-body-light');
+             }
 
              function applySelection() {
                  const data = appointmentMap[appointmentSelect.value];
@@ -257,17 +264,27 @@
                  if (data) {
                      patientSelect.value = data.patient_id;
                      doctorSelect.value = data.doctor_id;
+                     lock(patientSelect);
+                     lock(doctorSelect);
+                 } else {
+                     
+                     unlock(patientSelect);
+                     unlock(doctorSelect);
                  }
              }
 
              appointmentSelect.addEventListener('change', applySelection);
 
-             // Run once on page load too — covers the case where
-             // ?appointment_id=... is already in the URL (e.g. coming
-             // from the "Add Prescription" button on the appointment page)
+             
              if (appointmentSelect.value) {
                  applySelection();
              }
+
+             
+             form.addEventListener('submit', function () {
+                 unlock(patientSelect);
+                 unlock(doctorSelect);
+             });
          })();
      </script>
  @endsection

@@ -8,7 +8,7 @@
                  <div class="row justify-content-center push">
                      <div class="col-md-8 col-lg-6 col-xl-4">
                          <!-- Sign In Block -->
-                         {{ $errors }}
+                        
                          <div class="block block-rounded mb-0">
                              <div class="block-header block-header-default">
                                  <h3 class="block-title">Create Account</h3>
@@ -33,7 +33,7 @@
                                      </p>
 
 
-                                     <form class="js-validation-signup" action="" method="POST"
+                                     <form class="js-validation-signup" action="{{ route('register') }}" method="POST"
                                          novalidate="novalidate">
                                          @csrf
                                          <div class="py-3">

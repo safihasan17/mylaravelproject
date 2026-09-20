@@ -1,4 +1,4 @@
- @extends('admin.layouts.master')
+@extends('admin.layouts.master')
 
  @section('title', 'Prescriptions - Edit')
 
@@ -221,30 +221,6 @@
  @endsection
 
  @section('script')
-     {{-- Data is built here first, then passed to the json directive as a plain variable (the directive breaks on commas inside a multi-line expression). --}}
-     @php
-         $existingMedicines = $prescription->prescriptionMedicines
-             ->map(fn ($row) => [
-                 'medicine_id' => $row->medicine_id,
-                 'dosage' => $row->dosage,
-                 'duration' => $row->duration,
-                 'instructions' => $row->instructions,
-             ])
-             ->values()
-             ->all();
-
-         $existingLabTests = $prescription->labTestOrders
-             ->where('status', 'Pending')
-             ->map(fn ($row) => ['test_id' => $row->test_id])
-             ->values()
-             ->all();
-
-         $appointmentMap = $appointments
-             ->mapWithKeys(fn ($a) => [
-                 $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
-             ])
-             ->all();
-     @endphp
      <script>
          (function () {
              const container = document.getElementById('medicine-rows');
@@ -252,7 +228,7 @@
              let rowIndex = 0;
 
              // Existing medicines from the database, passed in as JSON
-             const existingRows = @json($existingMedicines);
+             const existingRows = @json($existingMedicineRows);
 
              function addRow(data = null) {
                  const html = template.innerHTML.replaceAll('__INDEX__', rowIndex);
@@ -293,7 +269,7 @@
              const template = document.getElementById('labtest-row-template');
              let rowIndex = 0;
 
-             const existingRows = @json($existingLabTests);
+             const existingRows = @json($existingLabTestRows);
 
              function addRow(data = null) {
                  const html = template.innerHTML.replaceAll('__INDEX__', rowIndex);
@@ -321,21 +297,50 @@
              existingRows.forEach(row => addRow(row));
          })();
 
-         // Auto-select patient & doctor when an appointment is picked
+         // Auto-select AND lock patient & doctor based on the chosen appointment
          (function () {
              const appointmentMap = @json($appointmentMap);
 
              const appointmentSelect = document.querySelector('select[name="appointment_id"]');
              const patientSelect = document.querySelector('select[name="patient_id"]');
              const doctorSelect = document.querySelector('select[name="doctor_id"]');
+             const form = document.getElementById('rx-form');
 
-             appointmentSelect.addEventListener('change', function () {
-                 const data = appointmentMap[this.value];
+             function lock(select) {
+                 select.setAttribute('disabled', 'disabled');
+                 select.classList.add('bg-body-light');
+             }
+
+             function unlock(select) {
+                 select.removeAttribute('disabled');
+                 select.classList.remove('bg-body-light');
+             }
+
+             function applySelection() {
+                 const data = appointmentMap[appointmentSelect.value];
 
                  if (data) {
                      patientSelect.value = data.patient_id;
                      doctorSelect.value = data.doctor_id;
+                     lock(patientSelect);
+                     lock(doctorSelect);
+                 } else {
+                     unlock(patientSelect);
+                     unlock(doctorSelect);
                  }
+             }
+
+             appointmentSelect.addEventListener('change', applySelection);
+
+             
+             if (appointmentSelect.value) {
+                 applySelection();
+             }
+
+            
+             form.addEventListener('submit', function () {
+                 unlock(patientSelect);
+                 unlock(doctorSelect);
              });
          })();
      </script>

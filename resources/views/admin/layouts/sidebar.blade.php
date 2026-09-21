@@ -128,86 +128,102 @@
     <!-- Sidebar Scrolling -->
     <div class="js-sidebar-scroll">
         <!-- Side Navigation -->
-        <div class="content-side">
-            <ul class="nav-main">
+        @if (auth()->user()->role_id == 1)
+            <div class="content-side">
+                <ul class="nav-main">
 
-                <li class="nav-main-heading">Hospital Management</li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link active" href="{{ route('dashboard') }}">
-                        <i class="nav-main-link-icon fa fa-heartbeat"></i>
-                        <span class="nav-main-link-name">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="{{ route('patients.index') }}">
-                        <i class="nav-main-link-icon fa fa-user-injured"></i>
-                        <span class="nav-main-link-name">Patients</span>
-                    </a>
-                </li>
- 
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="{{ route('doctors.index') }}">
-                        <i class="nav-main-link-icon fa fa-user-md"></i>
-                        <span class="nav-main-link-name">Doctors</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="{{ route('appointments.index') }}">
-                        <i class="nav-main-link-icon fa fa-calendar-check"></i>
-                        <span class="nav-main-link-name">Appointments</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_admissions.html">
-                        <i class="nav-main-link-icon fa fa-procedures"></i>
-                        <span class="nav-main-link-name">Wards, Beds & Admissions</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="{{ route('prescriptions.index') }}">
-                        <i class="nav-main-link-icon fa fa-file-medical"></i>
-                        <span class="nav-main-link-name">Prescriptions</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_pharmacy.html">
-                        <i class="nav-main-link-icon fa fa-pills"></i>
-                        <span class="nav-main-link-name">Pharmacy / Medicines</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="{{ route('lab-test-orders.index') }}">
-                        <i class="nav-main-link-icon fa fa-flask"></i>
-                        <span class="nav-main-link-name">Lab Tests</span>
-                    </a>
-                </li>
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="hm_invoices.html">
-                        <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
-                        <span class="nav-main-link-name">Billing / Invoices</span>
-                    </a>
-                </li>
-
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="/users">
-                        <i class="nav-main-link-icon fa fa-users"></i>
-                        <span class="nav-main-link-name">Users</span>
-                    </a>
-                </li>
+                    <li class="nav-main-heading">Hospital Management</li>
 
 
-                <li class="nav-main-item">
-                    <a class="nav-main-link" href="">
-                        <i class="nav-main-link-icon fa fa-user-shield"></i>
-                        <span class="nav-main-link-name">Role</span>
-                    </a>
-                </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link active" href="{{ route('dashboard') }}">
+                            <i class="nav-main-link-icon fa fa-heartbeat"></i>
+                            <span class="nav-main-link-name">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('patients.index') }}">
+                            <i class="nav-main-link-icon fa fa-user-injured"></i>
+                            <span class="nav-main-link-name">Patients</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('doctors.index') }}">
+                            <i class="nav-main-link-icon fa fa-user-md"></i>
+                            <span class="nav-main-link-name">Doctors</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('appointments.index') }}">
+                            <i class="nav-main-link-icon fa fa-calendar-check"></i>
+                            <span class="nav-main-link-name">Appointments</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="hm_admissions.html">
+                            <i class="nav-main-link-icon fa fa-procedures"></i>
+                            <span class="nav-main-link-name">Wards, Beds & Admissions</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('prescriptions.index') }}">
+                            <i class="nav-main-link-icon fa fa-file-medical"></i>
+                            <span class="nav-main-link-name">Prescriptions</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="hm_pharmacy.html">
+                            <i class="nav-main-link-icon fa fa-pills"></i>
+                            <span class="nav-main-link-name">Pharmacy / Medicines</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('lab-test-orders.index') }}">
+                            <i class="nav-main-link-icon fa fa-flask"></i>
+                            <span class="nav-main-link-name">Lab Tests</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="hm_invoices.html">
+                            <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
+                            <span class="nav-main-link-name">Billing / Invoices</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="/users">
+                            <i class="nav-main-link-icon fa fa-users"></i>
+                            <span class="nav-main-link-name">Users</span>
+                        </a>
+                    </li>
 
 
-                
-                
-            </ul>
-        </div>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="">
+                            <i class="nav-main-link-icon fa fa-user-shield"></i>
+                            <span class="nav-main-link-name">Role</span>
+                        </a>
+                    </li>
+
+
+
+
+                </ul>
+            </div>
+        @endif
+
+        {{-- doctor sidebar --}}
+
+        @if (auth()->user()->role_id == 2)
+            <li class="nav-main-heading">Hospital Management</li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('appointments.index') }}">
+                    <i class="nav-main-link-icon fa fa-user-md"></i>
+                    <span class="nav-main-link-name">Appointments</span>
+                </a>
+            </li>
+        @endif
         <!-- END Side Navigation -->
     </div>
     <!-- END Sidebar Scrolling -->

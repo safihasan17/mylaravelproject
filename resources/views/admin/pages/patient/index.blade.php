@@ -86,9 +86,11 @@
                                                 <td class="d-none d-sm-table-cell text-center">
                                                     {{ $item->gender }}{{ $item->dob ? ', ' . $item->dob->age : '' }}
                                                 </td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->blood_group ?? '-' }}</td>
+                                                <td class="d-none d-sm-table-cell text-center">
+                                                    {{ $item->blood_group ?? '-' }}</td>
                                                 <td class="d-none d-md-table-cell text-center">{{ $item->phone }}</td>
-                                                <td class="d-none d-xl-table-cell text-center fs-sm">{{ $item->guardian_name ?? 'N/A' }}</td>
+                                                <td class="d-none d-xl-table-cell text-center fs-sm">
+                                                    {{ $item->guardian_name ?? 'N/A' }}</td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
 
@@ -119,6 +121,9 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="table-footer-control">
+                                {{ $patients->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -128,9 +133,7 @@
         </div>
         <!-- END Page Content -->
 
-        <div class="table-footer-control">
-            {{ $patients->links('pagination::bootstrap-5') }}
-        </div>
+
     </main>
 
     {{-- modal --}}
@@ -148,8 +151,7 @@
                 @method('DELETE')
                 <button type="button" class="btn btn-outline-secondary" title="Delete row"
                     data-bs-dismiss="modal">cancel</button>
-                <button type="submit" class="btn  btn-danger" title="Delete row"
-                    data-bs-dismiss="modal">Delete</button>
+                <button type="submit" class="btn  btn-danger" title="Delete row" data-bs-dismiss="modal">Delete</button>
             </form>
 
         </div>
@@ -159,17 +161,18 @@
 
 @section('script')
 
-<script>
-document.querySelectorAll('.delete').forEach(button=>{
-    button.addEventListener('click', function(){
-        let id = this.dataset.id;
-        let name = this.dataset.name;
+    <script>
+        document.querySelectorAll('.delete').forEach(button => {
+            button.addEventListener('click', function() {
+                let id = this.dataset.id;
+                let name = this.dataset.name;
 
-        document.querySelector('#modalDelete .name').innerText = name;
-        document.querySelector('#modalDelete form').action = `{{ route('patients.destroy' , ['patient'=>':id']) }}` .replace(':id', id);
+                document.querySelector('#modalDelete .name').innerText = name;
+                document.querySelector('#modalDelete form').action =
+                    `{{ route('patients.destroy', ['patient' => ':id']) }}`.replace(':id', id);
 
-    })
-})
-</script>
+            })
+        })
+    </script>
 
 @endsection

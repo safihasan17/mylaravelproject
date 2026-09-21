@@ -18,7 +18,7 @@ class PrescriptionController extends Controller
     public function index()
     {
         $prescriptions = Prescription::with(['patient', 'doctor.user'])
-            ->latest('prescription_date')
+            ->orderBy('id', 'desc')
             ->paginate(10);
 
         $totalPrescriptions = Prescription::count();

@@ -6,27 +6,44 @@ use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Patient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         $query = Appointment::with(['patient', 'doctor.user', 'doctor.department']);
+
+
+        if (Auth::user()->role_id == 2) {
+            $query->whereHas('doctor', function ($q) {
+                $q->where('user_id', Auth::user()->id);
+            });
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $appointments = $query->latest()
+        $appointments = $query->orderBy('id', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        $todayCount     = Appointment::whereDate('appointment_date', today())->count();
-        $pendingCount   = Appointment::whereIn('status', ['Scheduled', 'Checked-in', 'Waiting'])->count();
-        $completedCount = Appointment::where('status', 'Completed')->count();
-        $cancelledCount = Appointment::where('status', 'Cancelled')->count();
+
+        $statsQuery = Appointment::query();
+
+        if (Auth::user()->role_id == 2) {
+            $statsQuery->whereHas('doctor', function ($q) {
+                $q->where('user_id', Auth::user()->id);
+            });
+        }
+
+        $todayCount     = (clone $statsQuery)->whereDate('appointment_date', today())->count();
+        $pendingCount   = (clone $statsQuery)->whereIn('status', ['Scheduled', 'Checked-in', 'Waiting'])->count();
+        $completedCount = (clone $statsQuery)->where('status', 'Completed')->count();
+        $cancelledCount = (clone $statsQuery)->where('status', 'Cancelled')->count();
 
         return view('admin.pages.appointment.index', compact(
             'appointments',
@@ -37,7 +54,7 @@ class AppointmentController extends Controller
         ));
     }
 
-    
+
     public function create()
     {
         $patients = Patient::orderBy('name')->get();
@@ -46,7 +63,7 @@ class AppointmentController extends Controller
         return view('admin.pages.appointment.create', compact('patients', 'doctors'));
     }
 
-    
+
     public function store(Request $request)
     {
         $validated = $this->validateAppointment($request);
@@ -57,7 +74,7 @@ class AppointmentController extends Controller
             ->with('success', 'Appointment booked successfully.');
     }
 
-    
+
     public function show(Appointment $appointment)
     {
         $appointment->load(['patient', 'doctor.user', 'doctor.department']);
@@ -65,7 +82,7 @@ class AppointmentController extends Controller
         return view('admin.pages.appointment.show', compact('appointment'));
     }
 
-    
+
     public function edit(Appointment $appointment)
     {
         $patients = Patient::orderBy('name')->get();
@@ -74,7 +91,7 @@ class AppointmentController extends Controller
         return view('admin.pages.appointment.edit', compact('appointment', 'patients', 'doctors'));
     }
 
-    
+
     public function update(Request $request, Appointment $appointment)
     {
         $validated = $this->validateAppointment($request);
@@ -85,7 +102,7 @@ class AppointmentController extends Controller
             ->with('success', 'Appointment updated successfully.');
     }
 
-    
+
     public function destroy(Appointment $appointment)
     {
         $appointment->delete();
@@ -94,7 +111,7 @@ class AppointmentController extends Controller
             ->with('success', 'Appointment deleted successfully.');
     }
 
-    
+
     private function validateAppointment(Request $request): array
     {
         return $request->validate([

@@ -41,12 +41,12 @@
                                          <div class="py-3">
                                              <div class="mb-4">
                                                  <input type="email" class="form-control form-control-alt form-control-lg"
-                                                     id="login-username" name="email" placeholder="example@gail.com">
+                                                     id="login-username" name="email" placeholder="example@gail.com" value="lynn04@example.net">
                                              </div>
                                              <div class="mb-4">
                                                  <input type="password"
                                                      class="form-control form-control-alt form-control-lg"
-                                                     id="login-password" name="password" placeholder="Password">
+                                                     id="login-password" name="password" placeholder="Password" value="password">
                                              </div>
                                              <div class="mb-4">
                                                  <div class="form-check">

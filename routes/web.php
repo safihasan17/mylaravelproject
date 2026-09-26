@@ -17,7 +17,10 @@ Route::get('/dashboard', function () {
     return view('admin.pages.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth','role_id:1')->group(function () {
+Route::middleware('auth', 'role_id:1')->group(function () {
+
+    Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
+    Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
 
     Route::resource('users', UserController::class);
     Route::resource('patients', PatientController::class);
@@ -26,19 +29,18 @@ Route::middleware('auth','role_id:1')->group(function () {
     Route::resource('prescriptions', PrescriptionController::class);
     Route::resource('lab-test-orders', LabTestOrderController::class);
 
+    
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-
 });
 
-Route::middleware('auth','role_id:1,2' )->group(function () {
+Route::middleware('auth', 'role_id:1,2')->group(function () {
 
     Route::resource('appointments', AppointmentController::class);
     Route::resource('prescriptions', PrescriptionController::class);
     Route::resource('lab-test-orders', LabTestOrderController::class);
-
 });
 
 

@@ -22,69 +22,50 @@
                 </div>
             @endif
 
-
             <div class="card mt-3">
                 <div class="card-body">
                     <form action="{{ route('appointments.store') }}" method="POST">
                         @csrf
                         <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label" for="ap-patient">Patient</label>
-                                <select class="form-select" name="patient_id" id="ap-patient">
-                                    <option value="" selected disabled>Select Patient</option>
-                                    @foreach ($patients as $patient)
-                                        <option value="{{ $patient->id }}" @selected(old('patient_id') == $patient->id)>
-                                            {{ $patient->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+
+                            {{-- Patient searchable input --}}
+                            <div class="col-md-6 mb-4 position-relative">
+                                <label class="form-label" for="ap-patient-search">Patient</label>
+                                <input type="text" class="form-control" id="ap-patient-search"
+                                    placeholder="Type patient name..." autocomplete="off"
+                                    value="{{ old('patient_name') }}">
+                                <input type="hidden" name="patient_id" id="ap-patient-id"
+                                    value="{{ old('patient_id') }}">
+                                <div id="ap-patient-results" class="list-group position-absolute w-100 shadow"
+                                    style="z-index: 1000; display:none; max-height: 220px; overflow-y:auto;"></div>
                                 <x-admin.error-msg name="patient_id" />
                             </div>
-                            {{-- <div class="col-md-6 mb-4">
-                                 <label class="form-label" for="ap-doctor">Doctor</label>
-                                 <select class="form-select" name="doctor_id" id="ap-doctor">
-                                     <option value="" selected disabled>Select Doctor</option>
-                                     @foreach ($doctors as $doctor)
-                                         <option value="{{ $doctor->id }}" @selected(old('doctor_id') == $doctor->id)>
-                                             {{ $doctor->user->name ?? 'Doctor #' . $doctor->id }}{{ $doctor->department ? ' — ' . $doctor->department->name : '' }}
-                                         </option>
-                                     @endforeach
-                                 </select>
-                                 <x-admin.error-msg name="doctor_id" />
-                             </div> --}}
-                             <div class="col-md-6 mb-4">
-                                 <label class="form-label" for="ap-doctor">Doctor</label>
 
-                                 @if (auth()->user()->role_id == 2)
-                                     <select class="form-select" name="doctor_id" id="ap-doctor" disabled>
-                                         @foreach ($doctors as $doctor)
-                                             @if ($doctor->user_id == auth()->id())
-                                                 <option value="{{ $doctor->id }}" selected>
-                                                     {{ $doctor->user->name ?? 'Doctor #' . $doctor->id }}{{ $doctor->department ? ' — ' . $doctor->department->name : '' }}
-                                                 </option>
-                                             @endif
-                                         @endforeach
-                                     </select>
-                                     
-                                     @foreach ($doctors as $doctor)
-                                         @if ($doctor->user_id == auth()->id())
-                                             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
-                                         @endif
-                                     @endforeach
-                                 @else
-                                     <select class="form-select" name="doctor_id" id="ap-doctor">
-                                         <option value="" selected disabled>Select Doctor</option>
-                                         @foreach ($doctors as $doctor)
-                                             <option value="{{ $doctor->id }}" @selected(old('doctor_id') == $doctor->id)>
-                                                 {{ $doctor->user->name ?? 'Doctor #' . $doctor->id }}{{ $doctor->department ? ' — ' . $doctor->department->name : '' }}
-                                             </option>
-                                         @endforeach
-                                     </select>
-                                 @endif
+                            {{-- Doctor searchable input --}}
+                            <div class="col-md-6 mb-4 position-relative">
+                                <label class="form-label" for="ap-doctor-search">Doctor</label>
 
-                                 <x-admin.error-msg name="doctor_id" />
-                             </div>
-                             
+                                @if (auth()->user()->role_id == 2)
+                                    @php
+                                        $myDoctor = $doctors->firstWhere('user_id', auth()->id());
+                                    @endphp
+                                    <input type="text" class="form-control"
+                                        value="{{ $myDoctor->user->name ?? '' }}{{ $myDoctor?->department ? ' — ' . $myDoctor->department->name : '' }}"
+                                        disabled>
+                                    <input type="hidden" name="doctor_id" value="{{ $myDoctor->id ?? '' }}">
+                                @else
+                                    <input type="text" class="form-control" id="ap-doctor-search"
+                                        placeholder="Type doctor name..." autocomplete="off"
+                                        value="{{ old('doctor_name') }}">
+                                    <input type="hidden" name="doctor_id" id="ap-doctor-id"
+                                        value="{{ old('doctor_id') }}">
+                                    <div id="ap-doctor-results" class="list-group position-absolute w-100 shadow"
+                                        style="z-index: 1000; display:none; max-height: 220px; overflow-y:auto;"></div>
+                                @endif
+
+                                <x-admin.error-msg name="doctor_id" />
+                            </div>
+
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-4">
@@ -134,4 +115,63 @@
 
     </div>
 
+@endsection
+
+@section('script')
+<script>
+    function setupSearchField(inputId, hiddenId, resultsId, searchUrl) {
+        const input   = document.getElementById(inputId);
+        const hidden  = document.getElementById(hiddenId);
+        const results = document.getElementById(resultsId);
+        if (!input) return;
+
+        let debounceTimer;
+
+        input.addEventListener('input', function () {
+            hidden.value = ''; 
+            const q = this.value.trim();
+
+            clearTimeout(debounceTimer);
+            if (q.length < 1) {
+                results.style.display = 'none';
+                results.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`${searchUrl}?q=${encodeURIComponent(q)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        results.innerHTML = '';
+                        if (data.length === 0) {
+                            results.innerHTML = '<div class="list-group-item text-muted">No match found</div>';
+                        } else {
+                            data.forEach(item => {
+                                const el = document.createElement('button');
+                                el.type = 'button';
+                                el.className = 'list-group-item list-group-item-action';
+                                el.textContent = item.name;
+                                el.addEventListener('click', () => {
+                                    input.value = item.name;
+                                    hidden.value = item.id;
+                                    results.style.display = 'none';
+                                });
+                                results.appendChild(el);
+                            });
+                        }
+                        results.style.display = 'block';
+                    });
+            }, 300); // debounce
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!results.contains(e.target) && e.target !== input) {
+                results.style.display = 'none';
+            }
+        });
+    }
+
+    setupSearchField('ap-patient-search', 'ap-patient-id', 'ap-patient-results', "{{ route('patients.search') }}");
+    setupSearchField('ap-doctor-search', 'ap-doctor-id', 'ap-doctor-results', "{{ route('doctors.search') }}");
+</script>
 @endsection

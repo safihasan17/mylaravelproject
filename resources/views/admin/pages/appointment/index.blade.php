@@ -70,19 +70,46 @@
                     <div class="block block-rounded h-100">
                         <div class="block-header block-header-default">
                             <h3 class="block-title">All Appointments</h3>
-                            <div class="block-options">
+
+                            <div class="block-options d-flex align-items-center gap-2">
+
+                                <form method="GET" action="{{ route('appointments.index') }}" class="d-flex">
+                                    <input type="text" name="search" value="{{ request('search') }}"
+                                        class="form-control form-control-sm" placeholder="Search patient or doctor...">
+
+                                    @if (request('status'))
+                                        <input type="hidden" name="status" value="{{ request('status') }}">
+                                    @endif
+
+                                    <button type="submit" class="btn btn-sm btn-primary ms-1" title="Search">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+
+                                    @if (request('search'))
+                                        <a href="{{ route('appointments.index', request()->except('search', 'page')) }}"
+                                            class="btn btn-sm btn-outline-secondary ms-1" title="Clear search">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    @endif
+                                </form>
+
                                 <div class="dropdown">
                                     <button type="button" class="btn-block-option" id="dropdown-filters-appts"
                                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Filters <i class="fa fa-angle-down ms-1"></i>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-filters-appts">
-                                        <a class="dropdown-item" href="{{ route('appointments.index', ['status' => 'Scheduled']) }}">Scheduled</a>
-                                        <a class="dropdown-item" href="{{ route('appointments.index', ['status' => 'Checked-in']) }}">Checked-in</a>
-                                        <a class="dropdown-item" href="{{ route('appointments.index', ['status' => 'Completed']) }}">Completed</a>
-                                        <a class="dropdown-item" href="{{ route('appointments.index', ['status' => 'Cancelled']) }}">Cancelled</a>
+                                        <a class="dropdown-item"
+                                            href="{{ route('appointments.index', array_merge(request()->except(['status', 'page']), ['status' => 'Scheduled'])) }}">Scheduled</a>
+                                        <a class="dropdown-item"
+                                            href="{{ route('appointments.index', array_merge(request()->except(['status', 'page']), ['status' => 'Checked-in'])) }}">Checked-in</a>
+                                        <a class="dropdown-item"
+                                            href="{{ route('appointments.index', array_merge(request()->except(['status', 'page']), ['status' => 'Completed'])) }}">Completed</a>
+                                        <a class="dropdown-item"
+                                            href="{{ route('appointments.index', array_merge(request()->except(['status', 'page']), ['status' => 'Cancelled'])) }}">Cancelled</a>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="{{ route('appointments.index') }}">Clear Filter</a>
+                                        <a class="dropdown-item"
+                                            href="{{ route('appointments.index', request()->except(['status', 'page'])) }}">Clear Filter</a>
                                     </div>
                                 </div>
                             </div>

@@ -103,7 +103,7 @@ class DoctorController extends Controller
             'image.max' => 'Image size is too large. Maximum size is 500KB',
         ]);
 
-        
+
         if ($request->hasFile('image')) {
 
             $imgName = UploadImgService::upload(
@@ -129,5 +129,27 @@ class DoctorController extends Controller
         return redirect()
             ->route('doctors.index')
             ->with('success', 'Doctor deleted successfully.');
+    }
+
+
+    public function search(Request $request)
+    {
+        $search = $request->query('q');
+
+        $doctors = Doctor::with(['user', 'department'])
+            ->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->limit(10)
+            ->get()
+            ->map(function ($doctor) {
+                return [
+                    'id'   => $doctor->id,
+                    'name' => ($doctor->user->name ?? 'Doctor #' . $doctor->id)
+                        . ($doctor->department ? ' — ' . $doctor->department->name : ''),
+                ];
+            });
+
+        return response()->json($doctors);
     }
 }

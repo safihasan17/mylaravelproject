@@ -23,6 +23,17 @@ class AppointmentController extends Controller
             });
         }
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('patient', function ($p) use ($search) {
+                    $p->where('name', 'like', "%{$search}%");
+                })->orWhereHas('doctor.user', function ($d) use ($search) {
+                    $d->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }

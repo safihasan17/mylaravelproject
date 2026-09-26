@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
-    
+
     public function index()
     {
         $patients = Patient::latest()->paginate(15);
@@ -106,5 +106,21 @@ class PatientController extends Controller
         return redirect()
             ->route('patients.index')
             ->with('success', 'Patient deleted successfully.');
+    }
+
+
+    public function search(Request $request)
+    {
+        $search = $request->query('q');
+
+        $patients = Patient::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name']);
+
+        return response()->json($patients);
     }
 }

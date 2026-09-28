@@ -7,6 +7,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +29,7 @@ Route::middleware('auth', 'role_id:1')->group(function () {
     Route::resource('appointments', AppointmentController::class);
     Route::resource('prescriptions', PrescriptionController::class);
     Route::resource('lab-test-orders', LabTestOrderController::class);
+    Route::resource('wards', WardController::class);
 
     
 

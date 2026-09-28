@@ -161,9 +161,9 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="hm_admissions.html">
+                        <a class="nav-main-link" href="{{route('wards.index')}}">
                             <i class="nav-main-link-icon fa fa-procedures"></i>
-                            <span class="nav-main-link-name">Wards, Beds & Admissions</span>
+                            <span class="nav-main-link-name">Wards</span>
                         </a>
                     </li>
                     <li class="nav-main-item">

@@ -13,6 +13,7 @@ use App\Models\Prescription;
 use App\Models\PrescriptionMedicine;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Ward;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -39,6 +40,7 @@ class DatabaseSeeder extends Seeder
         //     ['name' => 'Pharmacist'],
         //     ['name' => 'Lab Technician'],
         //     ['name' => 'Accountant'],
+        //     ['name' => 'Nurse'],
         // ]);
 
 
@@ -57,7 +59,7 @@ class DatabaseSeeder extends Seeder
         //     ['name' => 'General Medicine', 'description' => 'General diagnosis and treatment of common illnesses.'],
         // ]);
 
-        // Doctor::factory(30)->create();
+        // Doctor::factory(20)->create();
 
         // Appointment::factory(30)->create();
 
@@ -66,8 +68,12 @@ class DatabaseSeeder extends Seeder
         // PrescriptionMedicine::factory(30)->create();
 
 
-        LabTest::factory(12)->create();
-        LabTestOrder::factory(20)->create();
+        // LabTest::factory(12)->create();
+        // LabTestOrder::factory(20)->create();
+
+        // Ward::factory(20)->create();
+
+
 
 
 

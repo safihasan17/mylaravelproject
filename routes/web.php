@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\BedController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\LabTestOrderController;
 use App\Http\Controllers\PatientController;
@@ -30,6 +32,8 @@ Route::middleware('auth', 'role_id:1')->group(function () {
     Route::resource('prescriptions', PrescriptionController::class);
     Route::resource('lab-test-orders', LabTestOrderController::class);
     Route::resource('wards', WardController::class);
+    Route::resource('beds', BedController::class);
+    Route::resource('admissions', AdmissionController::class);
 
     
 

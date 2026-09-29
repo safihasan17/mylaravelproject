@@ -167,6 +167,18 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{route('beds.index')}}">
+                            <i class="nav-main-link-icon fa fa-procedures"></i>
+                            <span class="nav-main-link-name">Beds</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{route('admissions.index')}}">
+                            <i class="nav-main-link-icon fa fa-procedures"></i>
+                            <span class="nav-main-link-name">Admission</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
                         <a class="nav-main-link" href="{{ route('prescriptions.index') }}">
                             <i class="nav-main-link-icon fa fa-file-medical"></i>
                             <span class="nav-main-link-name">Prescriptions</span>

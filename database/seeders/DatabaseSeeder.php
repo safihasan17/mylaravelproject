@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admission;
 use App\Models\Appointment;
+use App\Models\Bed;
 use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\LabTest;
@@ -72,6 +74,8 @@ class DatabaseSeeder extends Seeder
         // LabTestOrder::factory(20)->create();
 
         // Ward::factory(20)->create();
+        // Bed::factory(50)->create();
+        Admission::factory(25)->create();
 
 
 

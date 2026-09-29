@@ -145,6 +145,8 @@
                              </div>
                          </div>
 
+                         @include('admin.pages.prescription._admission-fields')
+
                          <div class="block-content block-content-full text-end bg-body">
                              <a href="{{ route('prescriptions.index') }}" class="btn btn-sm btn-alt-secondary me-1">
                                  Cancel

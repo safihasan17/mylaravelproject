@@ -98,6 +98,18 @@
                             <span class="fw-medium">{{ $prescription->prescription_date?->format('d M Y') ?? '-' }}
                                 {{ $prescription->created_at?->format('H:i:s') }}</span>
                         </div>
+                        <div class="d-flex gap-2">
+                            <span class="text-muted">Admission:</span>
+                            @if ($prescription->admission)
+                                <span class="fw-medium">
+                                    {{ $prescription->admission->status }}
+                                    &mdash; {{ $prescription->admission->ward->name ?? '-' }}
+                                    / {{ $prescription->admission->bed->bed_number ?? '-' }}
+                                </span>
+                            @else
+                                <span class="fw-medium">&mdash;</span>
+                            @endif
+                        </div>
                         @if ($prescription->appointment)
                             <div class="d-flex gap-2">
                                 <span class="text-muted">Appointment:</span>

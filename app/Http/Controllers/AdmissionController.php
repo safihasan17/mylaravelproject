@@ -57,6 +57,13 @@ class AdmissionController extends Controller
             'status' => 'required|in:Admitted,Discharged,Transferred',
         ]);
 
+        // A patient can only have ONE active admission at a time
+        if ($validated['status'] === 'Admitted' && $this->hasActiveAdmission($validated['patient_id'])) {
+            return back()
+                ->withInput()
+                ->withErrors(['patient_id' => 'This patient is already admitted. Discharge the current admission first.']);
+        }
+
         $admission = Admission::create($validated);
 
         // Mark the bed occupied once a patient is admitted to it
@@ -113,6 +120,13 @@ class AdmissionController extends Controller
             'status' => 'required|in:Admitted,Discharged,Transferred',
         ]);
 
+        if ($validated['status'] === 'Admitted'
+            && $this->hasActiveAdmission($validated['patient_id'], $admission->id)) {
+            return back()
+                ->withInput()
+                ->withErrors(['patient_id' => 'This patient already has another active admission.']);
+        }
+
         $previousBedId = $admission->bed_id;
 
         $admission->update($validated);
@@ -139,10 +153,27 @@ class AdmissionController extends Controller
      */
     public function destroy(Admission $admission)
     {
+        // Free the bed only if this admission was still occupying it.
+        // (A discharged admission's bed may already belong to someone else.)
+        if ($admission->status === 'Admitted') {
+            Bed::where('id', $admission->bed_id)->update(['status' => 'Available']);
+        }
+
         $admission->delete();
 
         return redirect()
             ->route('admissions.index')
             ->with('success', 'Admission deleted successfully.');
+    }
+
+    /**
+     * Does this patient currently have an Admitted (active) admission?
+     */
+    private function hasActiveAdmission(int|string $patientId, ?int $exceptId = null): bool
+    {
+        return Admission::where('patient_id', $patientId)
+            ->where('status', 'Admitted')
+            ->when($exceptId, fn ($q) => $q->where('id', '!=', $exceptId))
+            ->exists();
     }
 }

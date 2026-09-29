@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admission;
 use App\Models\Appointment;
+use App\Models\Bed;
 use App\Models\Doctor;
 use App\Models\LabTest;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Models\Ward;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PrescriptionController extends Controller
 {
@@ -17,7 +23,7 @@ class PrescriptionController extends Controller
      */
     public function index()
     {
-        $prescriptions = Prescription::with(['patient', 'doctor.user'])
+        $prescriptions = Prescription::with(['patient', 'doctor.user', 'admission'])
             ->orderBy('id', 'desc')
             ->paginate(10);
 
@@ -45,13 +51,16 @@ class PrescriptionController extends Controller
         $appointments = Appointment::with('patient')->orderBy('appointment_date', 'desc')->get();
         $medicines = Medicine::orderBy('name')->get();
         $labTests = LabTest::orderBy('test_name')->get();
+        $wards = Ward::orderBy('name')->get();
+        $beds = Bed::where('status', 'Available')->get();
 
         $appointmentMap = $appointments->mapWithKeys(fn ($a) => [
             $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
         ]);
 
         return view('admin.pages.prescription.create', compact(
-            'patients', 'doctors', 'appointments', 'medicines', 'labTests', 'appointmentMap'
+            'patients', 'doctors', 'appointments', 'medicines', 'labTests', 'appointmentMap',
+            'wards', 'beds'
         ));
     }
 
@@ -73,25 +82,33 @@ class PrescriptionController extends Controller
             'medicines.*.instructions' => 'nullable|string',
             'lab_tests' => 'nullable|array',
             'lab_tests.*.test_id' => 'required_with:lab_tests|exists:lab_tests,id',
-        ]);
+        ] + $this->admissionRules($request));
 
-        $prescription = Prescription::create(
-            collect($validated)->except(['medicines', 'lab_tests'])->toArray()
-        );
+        DB::transaction(function () use ($validated) {
+            $prescription = Prescription::create(
+                collect($validated)->except(['medicines', 'lab_tests', 'admit_patient', 'admission'])->toArray()
+            );
 
-        foreach ($validated['medicines'] ?? [] as $row) {
-            $prescription->prescriptionMedicines()->create($row);
-        }
+            foreach ($validated['medicines'] ?? [] as $row) {
+                $prescription->prescriptionMedicines()->create($row);
+            }
 
-        foreach ($validated['lab_tests'] ?? [] as $row) {
-            $prescription->labTestOrders()->create([
-                'patient_id' => $prescription->patient_id,
-                'doctor_id' => $prescription->doctor_id,
-                'test_id' => $row['test_id'],
-                'status' => 'Pending',
-                'order_date' => $prescription->prescription_date,
-            ]);
-        }
+            foreach ($validated['lab_tests'] ?? [] as $row) {
+                $prescription->labTestOrders()->create([
+                    'patient_id' => $prescription->patient_id,
+                    'doctor_id' => $prescription->doctor_id,
+                    'test_id' => $row['test_id'],
+                    'status' => 'Pending',
+                    'order_date' => $prescription->prescription_date,
+                ]);
+            }
+
+            // Doctor chose "Admit patient" -> create the admission
+            // (otherwise admission_id simply stays NULL)
+            if (($validated['admit_patient'] ?? '0') === '1') {
+                $this->admitPatient($prescription, $validated['admission']);
+            }
+        });
 
         return redirect()
             ->route('prescriptions.index')
@@ -110,6 +127,8 @@ class PrescriptionController extends Controller
             'appointment',
             'prescriptionMedicines.medicine',
             'labTestOrders.test',
+            'admission.ward',
+            'admission.bed',
         ]);
 
         return view('admin.pages.prescription.show', compact('prescription'));
@@ -120,7 +139,7 @@ class PrescriptionController extends Controller
      */
     public function edit(Prescription $prescription)
     {
-        $prescription->load('prescriptionMedicines.medicine', 'labTestOrders');
+        $prescription->load('prescriptionMedicines.medicine', 'labTestOrders', 'admission.ward', 'admission.bed');
 
         $patients = Patient::orderBy('name')->get();
         $doctors = Doctor::with('user')->get();
@@ -144,9 +163,12 @@ class PrescriptionController extends Controller
             ->map(fn ($row) => ['test_id' => $row->test_id])
             ->values();
 
+        $wards = Ward::orderBy('name')->get();
+        $beds = Bed::where('status', 'Available')->get();
+
         return view('admin.pages.prescription.edit', compact(
             'prescription', 'patients', 'doctors', 'appointments', 'medicines', 'labTests',
-            'appointmentMap', 'existingMedicineRows', 'existingLabTestRows'
+            'appointmentMap', 'existingMedicineRows', 'existingLabTestRows', 'wards', 'beds'
         ));
     }
 
@@ -168,29 +190,36 @@ class PrescriptionController extends Controller
             'medicines.*.instructions' => 'nullable|string',
             'lab_tests' => 'nullable|array',
             'lab_tests.*.test_id' => 'required_with:lab_tests|exists:lab_tests,id',
-        ]);
+        ] + $this->admissionRules($request));
 
-        $prescription->update(
-            collect($validated)->except(['medicines', 'lab_tests'])->toArray()
-        );
+        DB::transaction(function () use ($validated, $prescription) {
+            $prescription->update(
+                collect($validated)->except(['medicines', 'lab_tests', 'admit_patient', 'admission'])->toArray()
+            );
 
-        // Replace the medicine list with whatever was submitted this time
-        $prescription->prescriptionMedicines()->delete();
-        foreach ($validated['medicines'] ?? [] as $row) {
-            $prescription->prescriptionMedicines()->create($row);
-        }
+            // Replace the medicine list with whatever was submitted this time
+            $prescription->prescriptionMedicines()->delete();
+            foreach ($validated['medicines'] ?? [] as $row) {
+                $prescription->prescriptionMedicines()->create($row);
+            }
 
-        
-        $prescription->labTestOrders()->where('status', 'Pending')->delete();
-        foreach ($validated['lab_tests'] ?? [] as $row) {
-            $prescription->labTestOrders()->create([
-                'patient_id' => $prescription->patient_id,
-                'doctor_id' => $prescription->doctor_id,
-                'test_id' => $row['test_id'],
-                'status' => 'Pending',
-                'order_date' => $prescription->prescription_date,
-            ]);
-        }
+            $prescription->labTestOrders()->where('status', 'Pending')->delete();
+            foreach ($validated['lab_tests'] ?? [] as $row) {
+                $prescription->labTestOrders()->create([
+                    'patient_id' => $prescription->patient_id,
+                    'doctor_id' => $prescription->doctor_id,
+                    'test_id' => $row['test_id'],
+                    'status' => 'Pending',
+                    'order_date' => $prescription->prescription_date,
+                ]);
+            }
+
+            // Admit only if not already admitted from this prescription.
+            // (Managing an existing admission is done from the Admissions page.)
+            if (is_null($prescription->admission_id) && ($validated['admit_patient'] ?? '0') === '1') {
+                $this->admitPatient($prescription, $validated['admission']);
+            }
+        });
 
         return redirect()
             ->route('prescriptions.index')
@@ -207,5 +236,65 @@ class PrescriptionController extends Controller
         return redirect()
             ->route('prescriptions.index')
             ->with('success', 'Prescription deleted successfully.');
+    }
+
+    /**
+     * Validation rules for the optional "admit patient" section.
+     */
+    private function admissionRules(Request $request): array
+    {
+        return [
+            'admit_patient' => 'nullable|in:0,1',
+            'admission.ward_id' => 'required_if:admit_patient,1|nullable|exists:wards,id',
+            'admission.bed_id' => [
+                'required_if:admit_patient,1',
+                'nullable',
+                Rule::exists('beds', 'id')->where(fn ($q) => $q
+                    ->where('status', 'Available')
+                    ->where('ward_id', $request->input('admission.ward_id'))),
+            ],
+            'admission.admission_date' => 'required_if:admit_patient,1|nullable|date',
+        ];
+    }
+
+    /**
+     * Create an Admission from this prescription, occupy the bed
+     * and link it via prescriptions.admission_id.
+     * Must be called inside a DB transaction.
+     */
+    private function admitPatient(Prescription $prescription, array $data): void
+    {
+        // A patient can only have ONE active admission at a time
+        $alreadyAdmitted = Admission::where('patient_id', $prescription->patient_id)
+            ->where('status', 'Admitted')
+            ->exists();
+
+        if ($alreadyAdmitted) {
+            throw ValidationException::withMessages([
+                'admit_patient' => 'This patient is already admitted. Discharge the current admission first.',
+            ]);
+        }
+
+        // Lock the bed so two doctors can't take the same bed at once
+        $bed = Bed::whereKey($data['bed_id'])->lockForUpdate()->first();
+
+        if (! $bed || $bed->status !== 'Available') {
+            throw ValidationException::withMessages([
+                'admission.bed_id' => 'This bed was just taken. Please choose another bed.',
+            ]);
+        }
+
+        $admission = Admission::create([
+            'patient_id' => $prescription->patient_id,
+            'doctor_id' => $prescription->doctor_id,
+            'ward_id' => $data['ward_id'],
+            'bed_id' => $bed->id,
+            'admission_date' => $data['admission_date'],
+            'status' => 'Admitted',
+        ]);
+
+        $bed->update(['status' => 'Occupied']);
+
+        $prescription->update(['admission_id' => $admission->id]);
     }
 }

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'patient_id',
     'doctor_id',
     'appointment_id',
+    'admission_id',
     'notes',
     'prescription_date',
 ])]
@@ -46,6 +47,15 @@ class Prescription extends Model
     public function appointment(): BelongsTo
     {
         return $this->belongsTo(Appointment::class);
+    }
+
+    /**
+     * The admission created from this prescription.
+     * NULL  => patient was not admitted.
+     */
+    public function admission(): BelongsTo
+    {
+        return $this->belongsTo(Admission::class);
     }
 
     /**

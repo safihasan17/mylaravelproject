@@ -161,19 +161,19 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{route('wards.index')}}">
+                        <a class="nav-main-link" href="{{ route('wards.index') }}">
                             <i class="nav-main-link-icon fa fa-procedures"></i>
                             <span class="nav-main-link-name">Wards</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{route('beds.index')}}">
+                        <a class="nav-main-link" href="{{ route('beds.index') }}">
                             <i class="nav-main-link-icon fa fa-procedures"></i>
                             <span class="nav-main-link-name">Beds</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{route('admissions.index')}}">
+                        <a class="nav-main-link" href="{{ route('admissions.index') }}">
                             <i class="nav-main-link-icon fa fa-procedures"></i>
                             <span class="nav-main-link-name">Admission</span>
                         </a>
@@ -197,9 +197,16 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="hm_invoices.html">
+                        <a class="nav-main-link" href="{{ route('invoices.index') }}">
                             <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
                             <span class="nav-main-link-name">Billing / Invoices</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('invoice-items.index') }}">
+                            <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
+                            <span class="nav-main-link-name">Invoice Item</span>
                         </a>
                     </li>
 
@@ -233,6 +240,43 @@
                 <a class="nav-main-link" href="{{ route('appointments.index') }}">
                     <i class="nav-main-link-icon fa fa-user-md"></i>
                     <span class="nav-main-link-name">Appointments</span>
+                </a>
+            </li>
+
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('prescriptions.index') }}">
+                    <i class="nav-main-link-icon fa fa-file-medical"></i>
+                    <span class="nav-main-link-name">Prescriptions</span>
+                </a>
+            </li>
+        @endif
+
+
+        @if (auth()->user()->role_id == 3)
+            <li class="nav-main-heading">Hospital Management</li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('patients.index') }}">
+                    <i class="nav-main-link-icon fa fa-user-injured"></i>
+                    <span class="nav-main-link-name">Patients</span>
+                </a>
+            </li>
+
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('appointments.index') }}">
+                    <i class="nav-main-link-icon fa fa-user-md"></i>
+                    <span class="nav-main-link-name">Appointments</span>
+                </a>
+            </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('lab-test-orders.index') }}">
+                    <i class="nav-main-link-icon fa fa-flask"></i>
+                    <span class="nav-main-link-name">Lab Tests</span>
+                </a>
+            </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('invoices.index') }}">
+                    <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
+                    <span class="nav-main-link-name">Billing / Invoices</span>
                 </a>
             </li>
         @endif

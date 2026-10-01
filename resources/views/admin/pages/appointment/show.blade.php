@@ -74,11 +74,12 @@
                     <a class="btn btn-alt-primary w-100 mb-2" href="{{ route('patients.show', $appointment->patient_id) }}">
                         <i class="fa fa-user me-1"></i> View Patient Profile
                     </a>
-
+                  @if (auth()->user()->role_id == 2 || 1)
                     <a class="btn btn-primary w-100"
                         href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}">
                         <i class="fa fa-file-prescription me-1"></i> Add Prescription
                     </a>
+                    @endif
                 </div>
 
                 <!-- Right: Details -->
@@ -94,7 +95,7 @@
                                         <tr>
                                             <td class="fw-semibold" style="width: 200px;">Patient</td>
                                             <td>
-                                                <a href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}">
+                                                <a>
                                                     {{ $appointment->patient->name ?? 'N/A' }}
                                                 </a>
                                             </td>

@@ -7,10 +7,11 @@
 
         <div class="content">
             <x-admin.phead title="Appointments" subtitle="Schedule and track patient appointments">
-
+               @if (auth()->user()->role_id != 2)
                 <a href="{{ route('appointments.create') }}" type="button" class="btn btn-sm btn-primary">
                     <i class="fa fa-plus opacity-50 me-1"></i> New Appointment
                 </a>
+                @endif
 
             </x-admin.phead>
 

@@ -18,6 +18,15 @@
                     <a href="{{ route('prescriptions.edit', $prescription->id) }}" class="btn btn-sm btn-primary">
                         <i class="fa fa-pencil-alt opacity-50 me-1"></i> Edit
                     </a>
+                 @if (auth()->user()->role_id != 2)
+                    <form action="{{ route('prescriptions.generate-invoice', $prescription->id) }}" method="POST"
+                        class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="fa fa-file-invoice-dollar opacity-50 me-1"></i> Generate Invoice
+                        </button>
+                    </form>
+                  @endif
                     <button type="button" class="btn btn-sm btn-alt-secondary" onclick="window.print()">
                         <i class="fa fa-print opacity-50 me-1"></i> Print
                     </button>
@@ -32,8 +41,7 @@
             @endif
 
             {{-- ===================== PRINT SHEET ===================== --}}
-            <div id="rx-print-area" class="bg-white text-dark mx-auto p-4 p-print-0 border"
-                style="max-width: 210mm;">
+            <div id="rx-print-area" class="bg-white text-dark mx-auto p-4 p-print-0 border" style="max-width: 210mm;">
 
                 {{-- Header --}}
                 <div class="d-flex justify-content-between align-items-start gap-3">
@@ -45,7 +53,8 @@
                         <div class="fs-6">{{ $prescription->doctor->specialization ?? '' }}</div>
 
                         @if ($prescription->doctor->registration_no ?? false)
-                            <div class="small text-muted">Registration No: {{ $prescription->doctor->registration_no }}</div>
+                            <div class="small text-muted">Registration No: {{ $prescription->doctor->registration_no }}
+                            </div>
                         @endif
                         @if ($prescription->doctor->user->email ?? false)
                             <div class="small text-muted">Email: {{ $prescription->doctor->user->email }}</div>
@@ -199,7 +208,7 @@
 
                 {{-- Disclaimer --}}
                 <div class="border-top border-dark border-2 opacity-100 mt-3 pt-2">
-                   
+
                 </div>
 
                 <div class="small text-muted mt-3 no-print">
@@ -211,7 +220,7 @@
         </div>
     </main>
 
-    
+
     <style>
         .font-serif {
             font-family: Georgia, 'Times New Roman', serif;

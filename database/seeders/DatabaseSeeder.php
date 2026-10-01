@@ -7,6 +7,8 @@ use App\Models\Appointment;
 use App\Models\Bed;
 use App\Models\Department;
 use App\Models\Doctor;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\LabTest;
 use App\Models\LabTestOrder;
 use App\Models\Medicine;
@@ -75,7 +77,9 @@ class DatabaseSeeder extends Seeder
 
         // Ward::factory(20)->create();
         // Bed::factory(50)->create();
-        Admission::factory(25)->create();
+        // Admission::factory(25)->create();
+        // Invoice::factory(20)->create();
+        InvoiceItem::factory(20)->create();
 
 
 

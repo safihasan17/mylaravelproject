@@ -15,9 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Models\Invoice;
 
 class PrescriptionController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
@@ -54,13 +56,19 @@ class PrescriptionController extends Controller
         $wards = Ward::orderBy('name')->get();
         $beds = Bed::where('status', 'Available')->get();
 
-        $appointmentMap = $appointments->mapWithKeys(fn ($a) => [
+        $appointmentMap = $appointments->mapWithKeys(fn($a) => [
             $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
         ]);
 
         return view('admin.pages.prescription.create', compact(
-            'patients', 'doctors', 'appointments', 'medicines', 'labTests', 'appointmentMap',
-            'wards', 'beds'
+            'patients',
+            'doctors',
+            'appointments',
+            'medicines',
+            'labTests',
+            'appointmentMap',
+            'wards',
+            'beds'
         ));
     }
 
@@ -147,11 +155,11 @@ class PrescriptionController extends Controller
         $medicines = Medicine::orderBy('name')->get();
         $labTests = LabTest::orderBy('test_name')->get();
 
-        $appointmentMap = $appointments->mapWithKeys(fn ($a) => [
+        $appointmentMap = $appointments->mapWithKeys(fn($a) => [
             $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
         ]);
 
-        $existingMedicineRows = $prescription->prescriptionMedicines->map(fn ($row) => [
+        $existingMedicineRows = $prescription->prescriptionMedicines->map(fn($row) => [
             'medicine_id' => $row->medicine_id,
             'dosage' => $row->dosage,
             'duration' => $row->duration,
@@ -160,15 +168,24 @@ class PrescriptionController extends Controller
 
         $existingLabTestRows = $prescription->labTestOrders
             ->where('status', 'Pending')
-            ->map(fn ($row) => ['test_id' => $row->test_id])
+            ->map(fn($row) => ['test_id' => $row->test_id])
             ->values();
 
         $wards = Ward::orderBy('name')->get();
         $beds = Bed::where('status', 'Available')->get();
 
         return view('admin.pages.prescription.edit', compact(
-            'prescription', 'patients', 'doctors', 'appointments', 'medicines', 'labTests',
-            'appointmentMap', 'existingMedicineRows', 'existingLabTestRows', 'wards', 'beds'
+            'prescription',
+            'patients',
+            'doctors',
+            'appointments',
+            'medicines',
+            'labTests',
+            'appointmentMap',
+            'existingMedicineRows',
+            'existingLabTestRows',
+            'wards',
+            'beds'
         ));
     }
 
@@ -249,7 +266,7 @@ class PrescriptionController extends Controller
             'admission.bed_id' => [
                 'required_if:admit_patient,1',
                 'nullable',
-                Rule::exists('beds', 'id')->where(fn ($q) => $q
+                Rule::exists('beds', 'id')->where(fn($q) => $q
                     ->where('status', 'Available')
                     ->where('ward_id', $request->input('admission.ward_id'))),
             ],
@@ -296,5 +313,73 @@ class PrescriptionController extends Controller
         $bed->update(['status' => 'Occupied']);
 
         $prescription->update(['admission_id' => $admission->id]);
+    }
+
+
+
+
+    // invoice
+    public function generateInvoice(Prescription $prescription)
+    {
+        $prescription->load(['doctor', 'labTestOrders.test', 'medicines']);
+
+        if ($prescription->admission_id) {
+            $invoice = Invoice::firstOrNew(['admission_id' => $prescription->admission_id]);
+        } elseif ($prescription->appointment_id) {
+            $invoice = Invoice::firstOrNew(['appointment_id' => $prescription->appointment_id]);
+        } else {
+            return back()->with('error', 'This prescription is not linked to an appointment or admission, so an invoice cannot be generated.');
+        }
+
+        $invoice->patient_id = $prescription->patient_id;
+        $invoice->invoice_date = $invoice->invoice_date ?? $prescription->prescription_date;
+        $invoice->status = $invoice->status ?? 'Unpaid';
+        $invoice->save();
+
+        // Remove previously auto-generated items first so re-generating
+        // (e.g. after editing the prescription) doesn't create duplicates.
+        // Manually added "Other" items on the invoice are left untouched.
+        $invoice->items()->whereIn('item_type', ['Consultation Fee', 'Lab Test', 'Medicine'])->delete();
+
+        $isAdmitted = (bool) $prescription->admission_id;
+
+        // Consultation fee + Medicines — only billed when the patient is admitted (IPD)
+        if ($isAdmitted) {
+            if ($prescription->doctor && $prescription->doctor->consultation_fee) {
+                $invoice->items()->create([
+                    'item_type' => 'Consultation Fee',
+                    'item_reference_id' => $prescription->doctor_id,
+                    'description' => 'Consultation — Dr. ' . ($prescription->doctor->user->name ?? 'N/A'),
+                    'amount' => $prescription->doctor->consultation_fee,
+                ]);
+            }
+
+            foreach ($prescription->medicines as $medicine) {
+                $invoice->items()->create([
+                    'item_type' => 'Medicine',
+                    'item_reference_id' => $medicine->id,
+                    'description' => $medicine->name,
+                    'amount' => $medicine->unit_price ?? 0,
+                ]);
+            }
+        }
+
+        // Lab Tests — always billed regardless of admission status
+        foreach ($prescription->labTestOrders as $order) {
+            if ($order->test) {
+                $invoice->items()->create([
+                    'item_type' => 'Lab Test',
+                    'item_reference_id' => $order->test_id,
+                    'description' => $order->test->test_name,
+                    'amount' => $order->test->price ?? 0,
+                ]);
+            }
+        }
+
+        $invoice->update(['total_amount' => $invoice->items()->sum('amount')]);
+
+        return redirect()
+            ->route('invoices.show', $invoice->id)
+            ->with('success', 'Invoice generated from prescription.');
     }
 }

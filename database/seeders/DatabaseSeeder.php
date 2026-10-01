@@ -79,7 +79,7 @@ class DatabaseSeeder extends Seeder
         // Bed::factory(50)->create();
         // Admission::factory(25)->create();
         // Invoice::factory(20)->create();
-        InvoiceItem::factory(20)->create();
+        // InvoiceItem::factory(20)->create();
 
 
 

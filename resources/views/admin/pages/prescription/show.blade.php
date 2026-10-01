@@ -18,15 +18,15 @@
                     <a href="{{ route('prescriptions.edit', $prescription->id) }}" class="btn btn-sm btn-primary">
                         <i class="fa fa-pencil-alt opacity-50 me-1"></i> Edit
                     </a>
-                 @if (auth()->user()->role_id != 2)
-                    <form action="{{ route('prescriptions.generate-invoice', $prescription->id) }}" method="POST"
-                        class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-success">
-                            <i class="fa fa-file-invoice-dollar opacity-50 me-1"></i> Generate Invoice
-                        </button>
-                    </form>
-                  @endif
+                    @if (auth()->user()->role_id != 2)
+                        <form action="{{ route('prescriptions.generate-invoice', $prescription->id) }}" method="POST"
+                            class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="fa fa-file-invoice-dollar opacity-50 me-1"></i> Generate Invoice
+                            </button>
+                        </form>
+                    @endif
                     <button type="button" class="btn btn-sm btn-alt-secondary" onclick="window.print()">
                         <i class="fa fa-print opacity-50 me-1"></i> Print
                     </button>
@@ -109,15 +109,10 @@
                         </div>
                         <div class="d-flex gap-2">
                             <span class="text-muted">Admission:</span>
-                            @if ($prescription->admission)
-                                <span class="fw-medium">
-                                    {{ $prescription->admission->status }}
-                                    &mdash; {{ $prescription->admission->ward->name ?? '-' }}
-                                    / {{ $prescription->admission->bed->bed_number ?? '-' }}
-                                </span>
-                            @else
-                                <span class="fw-medium">&mdash;</span>
-                            @endif
+                            @include('admin.pages.prescription._admission-status', [
+                                'prescription' => $prescription,
+                                'detailed' => true,
+                            ])
                         </div>
                         @if ($prescription->appointment)
                             <div class="d-flex gap-2">

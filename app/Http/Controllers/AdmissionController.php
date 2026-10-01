@@ -6,8 +6,10 @@ use App\Models\Admission;
 use App\Models\Bed;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Prescription;
 use App\Models\Ward;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdmissionController extends Controller
 {
@@ -32,14 +34,27 @@ class AdmissionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        
+        $prescription = null;
+        if ($request->filled('prescription_id')) {
+            $prescription = Prescription::with(['patient', 'doctor.user'])
+                ->findOrFail($request->query('prescription_id'));
+
+            if ($prescription->admission_id) {
+                return redirect()
+                    ->route('admissions.show', $prescription->admission_id)
+                    ->with('error', 'This prescription already has an admission.');
+            }
+        }
+
         $patients = Patient::orderBy('name')->get();
         $doctors = Doctor::with('user')->get();
         $wards = Ward::orderBy('name')->get();
         $beds = Bed::with('ward')->where('status', 'Available')->get();
 
-        return view('admin.pages.admission.create', compact('patients', 'doctors', 'wards', 'beds'));
+        return view('admin.pages.admission.create', compact('patients', 'doctors', 'wards', 'beds', 'prescription'));
     }
 
     /**
@@ -48,6 +63,7 @@ class AdmissionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'prescription_id' => 'nullable|exists:prescriptions,id',
             'patient_id' => 'required|exists:patients,id',
             'doctor_id' => 'required|exists:doctors,id',
             'ward_id' => 'required|exists:wards,id',
@@ -57,6 +73,24 @@ class AdmissionController extends Controller
             'status' => 'required|in:Admitted,Discharged,Transferred',
         ]);
 
+        // If this admission comes from a prescription, make sure it is valid
+        $prescription = null;
+        if (! empty($validated['prescription_id'])) {
+            $prescription = Prescription::find($validated['prescription_id']);
+
+            if ($prescription->admission_id) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['patient_id' => 'This prescription is already linked to an admission.']);
+            }
+
+            if ((int) $prescription->patient_id !== (int) $validated['patient_id']) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['patient_id' => 'The patient does not match the prescription.']);
+            }
+        }
+
         // A patient can only have ONE active admission at a time
         if ($validated['status'] === 'Admitted' && $this->hasActiveAdmission($validated['patient_id'])) {
             return back()
@@ -64,12 +98,19 @@ class AdmissionController extends Controller
                 ->withErrors(['patient_id' => 'This patient is already admitted. Discharge the current admission first.']);
         }
 
-        $admission = Admission::create($validated);
+        DB::transaction(function () use ($validated, $prescription) {
+            $admission = Admission::create(collect($validated)->except('prescription_id')->toArray());
 
-        // Mark the bed occupied once a patient is admitted to it
-        if ($admission->status === 'Admitted') {
-            $admission->bed->update(['status' => 'Occupied']);
-        }
+            // Mark the bed occupied once a patient is admitted to it
+            if ($admission->status === 'Admitted') {
+                $admission->bed->update(['status' => 'Occupied']);
+            }
+
+            // Link the prescription -> its status becomes "Admitted"
+            if ($prescription) {
+                $prescription->update(['admission_id' => $admission->id]);
+            }
+        });
 
         return redirect()
             ->route('admissions.index')
@@ -95,8 +136,7 @@ class AdmissionController extends Controller
         $doctors = Doctor::with('user')->get();
         $wards = Ward::orderBy('name')->get();
 
-        // Include the currently assigned bed even if it's not "Available"
-        // anymore, otherwise it would disappear from its own edit form.
+        
         $beds = Bed::with('ward')
             ->where('status', 'Available')
             ->orWhere('id', $admission->bed_id)
@@ -153,8 +193,7 @@ class AdmissionController extends Controller
      */
     public function destroy(Admission $admission)
     {
-        // Free the bed only if this admission was still occupying it.
-        // (A discharged admission's bed may already belong to someone else.)
+        
         if ($admission->status === 'Admitted') {
             Bed::where('id', $admission->bed_id)->update(['status' => 'Available']);
         }

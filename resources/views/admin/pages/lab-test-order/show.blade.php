@@ -13,9 +13,20 @@
                     <i class="fa fa-arrow-left opacity-50 me-1"></i> Back to Orders
                 </a>
 
-                <a href="{{ route('lab-test-orders.edit', $labTestOrder->id) }}" type="button" class="btn btn-sm btn-primary">
+                <a href="{{ route('lab-test-orders.edit', $labTestOrder->id) }}" type="button"
+                    class="btn btn-sm btn-primary">
                     <i class="fa fa-pencil-alt opacity-50 me-1"></i> Edit
                 </a>
+
+                @if (in_array(auth()->user()->role_id, [1, 3]) && !$labTestOrder->prescription_id)
+                    <form action="{{ route('lab-test-orders.generate-invoice', $labTestOrder->id) }}" method="POST"
+                        class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="fa fa-file-invoice-dollar opacity-50 me-1"></i> Generate Invoice
+                        </button>
+                    </form>
+                @endif
 
             </x-admin.phead>
 
@@ -95,11 +106,14 @@
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">Status</td>
-                                            <td><span class="badge bg-{{ $statusColor }}">{{ $labTestOrder->status }}</span></td>
+                                            <td><span
+                                                    class="badge bg-{{ $statusColor }}">{{ $labTestOrder->status }}</span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold align-top">Result</td>
-                                            <td style="white-space: pre-line;">{{ $labTestOrder->result ?? 'Not available yet.' }}</td>
+                                            <td style="white-space: pre-line;">
+                                                {{ $labTestOrder->result ?? 'Not available yet.' }}</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">Ordered At</td>

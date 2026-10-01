@@ -22,6 +22,7 @@ Route::get('/dashboard', function () {
     return view('admin.pages.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
 Route::middleware('auth', 'role_id:1')->group(function () {
 
     Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
@@ -40,33 +41,50 @@ Route::middleware('auth', 'role_id:1')->group(function () {
     Route::resource('invoice-items', InvoiceItemController::class);
 
     Route::post('prescriptions/{prescription}/generate-invoice', [PrescriptionController::class, 'generateInvoice'])
-    ->name('prescriptions.generate-invoice');
+        ->name('prescriptions.generate-invoice');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ---------------- 2) ADMIN + DOCTOR: appointment & prescription banano/edit ----------------
 Route::middleware('auth', 'role_id:1,2')->group(function () {
 
-    Route::resource('appointments', AppointmentController::class);
-    Route::resource('prescriptions', PrescriptionController::class);
-    Route::resource('lab-test-orders', LabTestOrderController::class);
+    Route::resource('appointments', AppointmentController::class)->except(['index', 'show']);
+    Route::resource('prescriptions', PrescriptionController::class)->except(['index', 'show']);
 });
 
+// ---------------- 3) ADMIN + RECEPTIONIST: patient, admission, test, invoice ----------------
+Route::middleware('auth', 'role_id:1,3')->group(function () {
 
+    Route::resource('patients', PatientController::class)->except(['show', 'destroy']);
+    Route::resource('admissions', AdmissionController::class)->except(['destroy']);
+    Route::resource('lab-test-orders', LabTestOrderController::class)->except(['destroy']);
+    Route::resource('invoices', InvoiceController::class)->except(['destroy']);
+    Route::resource('invoice-items', InvoiceItemController::class)->except(['destroy']);
+
+    Route::post('prescriptions/{prescription}/generate-invoice', [PrescriptionController::class, 'generateInvoice'])
+        ->name('prescriptions.generate-invoice');
+    Route::post('appointments/{appointment}/generate-invoice', [InvoiceController::class, 'fromAppointment'])
+        ->name('appointments.generate-invoice');
+    Route::post('lab-test-orders/{labTestOrder}/generate-invoice', [LabTestOrderController::class, 'generateInvoice'])
+        ->name('lab-test-orders.generate-invoice');
+});
+
+// ---------------- 4) ADMIN + DOCTOR + RECEPTIONIST: shared (shudhu dekha) ----------------
 Route::middleware('auth', 'role_id:1,2,3')->group(function () {
 
-    Route::resource('patients', PatientController::class);
     Route::resource('appointments', AppointmentController::class);
-    Route::resource('lab-test-orders', LabTestOrderController::class);
-    Route::resource('invoices', InvoiceController::class);
+    Route::resource('prescriptions', PrescriptionController::class)->only(['index', 'show']);
+    Route::resource('patients', PatientController::class)->only(['show']);
+
     Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
     Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
-    
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-
-
 
 require __DIR__ . '/auth.php';

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'doctor_id',
     'appointment_id',
     'admission_id',
+    'admission_advised',
     'notes',
     'prescription_date',
 ])]
@@ -31,6 +32,7 @@ class Prescription extends Model
     {
         return [
             'prescription_date' => 'date',
+            'admission_advised' => 'boolean',
         ];
     }
 

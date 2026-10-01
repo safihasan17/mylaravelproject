@@ -71,14 +71,25 @@
                         </div>
                     </div>
 
-                    <a class="btn btn-alt-primary w-100 mb-2" href="{{ route('patients.show', $appointment->patient_id) }}">
+                    <a class="btn btn-alt-primary w-100 mb-2"
+                        href="{{ route('patients.show', $appointment->patient_id) }}">
                         <i class="fa fa-user me-1"></i> View Patient Profile
                     </a>
-                  @if (auth()->user()->role_id == 2 || 1)
-                    <a class="btn btn-primary w-100"
-                        href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}">
-                        <i class="fa fa-file-prescription me-1"></i> Add Prescription
-                    </a>
+                    @if (auth()->user()->role_id == 2 || 1)
+                        <a class="btn btn-primary w-100"
+                            href="{{ route('prescriptions.create', ['appointment_id' => $appointment->id]) }}">
+                            <i class="fa fa-file-prescription me-1"></i> Add Prescription
+                        </a>
+                    @endif
+
+                    @if (in_array(auth()->user()->role_id, [1, 3]))
+                        <form action="{{ route('appointments.generate-invoice', $appointment->id) }}" method="POST"
+                            class="mt-2">
+                            @csrf
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fa fa-file-invoice-dollar me-1"></i> Doctor Fee Invoice
+                            </button>
+                        </form>
                     @endif
                 </div>
 
@@ -120,7 +131,9 @@
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">Status</td>
-                                            <td><span class="badge bg-{{ $statusColor }}">{{ $appointment->status }}</span></td>
+                                            <td><span
+                                                    class="badge bg-{{ $statusColor }}">{{ $appointment->status }}</span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">Reason for Visit</td>

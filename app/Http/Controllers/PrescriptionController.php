@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admission;
 use App\Models\Appointment;
-use App\Models\Bed;
 use App\Models\Doctor;
 use App\Models\LabTest;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
-use App\Models\Ward;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use App\Models\Invoice;
 
 class PrescriptionController extends Controller
@@ -53,8 +48,6 @@ class PrescriptionController extends Controller
         $appointments = Appointment::with('patient')->orderBy('appointment_date', 'desc')->get();
         $medicines = Medicine::orderBy('name')->get();
         $labTests = LabTest::orderBy('test_name')->get();
-        $wards = Ward::orderBy('name')->get();
-        $beds = Bed::where('status', 'Available')->get();
 
         $appointmentMap = $appointments->mapWithKeys(fn($a) => [
             $a->id => ['patient_id' => $a->patient_id, 'doctor_id' => $a->doctor_id],
@@ -66,9 +59,7 @@ class PrescriptionController extends Controller
             'appointments',
             'medicines',
             'labTests',
-            'appointmentMap',
-            'wards',
-            'beds'
+            'appointmentMap'
         ));
     }
 
@@ -83,6 +74,7 @@ class PrescriptionController extends Controller
             'appointment_id' => 'nullable|exists:appointments,id',
             'prescription_date' => 'required|date',
             'notes' => 'nullable|string',
+            'admission_advised' => 'nullable|boolean',
             'medicines' => 'nullable|array',
             'medicines.*.medicine_id' => 'required_with:medicines|exists:medicines,id',
             'medicines.*.dosage' => 'nullable|string|max:100',
@@ -90,12 +82,16 @@ class PrescriptionController extends Controller
             'medicines.*.instructions' => 'nullable|string',
             'lab_tests' => 'nullable|array',
             'lab_tests.*.test_id' => 'required_with:lab_tests|exists:lab_tests,id',
-        ] + $this->admissionRules($request));
+        ]);
 
-        DB::transaction(function () use ($validated) {
-            $prescription = Prescription::create(
-                collect($validated)->except(['medicines', 'lab_tests', 'admit_patient', 'admission'])->toArray()
-            );
+        DB::transaction(function () use ($validated, $request) {
+            $data = collect($validated)->except(['medicines', 'lab_tests'])->toArray();
+
+            // Doctor can only SUGGEST admission. The receptionist does the
+            // actual admission later, which fills prescriptions.admission_id.
+            $data['admission_advised'] = $request->boolean('admission_advised');
+
+            $prescription = Prescription::create($data);
 
             foreach ($validated['medicines'] ?? [] as $row) {
                 $prescription->prescriptionMedicines()->create($row);
@@ -109,12 +105,6 @@ class PrescriptionController extends Controller
                     'status' => 'Pending',
                     'order_date' => $prescription->prescription_date,
                 ]);
-            }
-
-            // Doctor chose "Admit patient" -> create the admission
-            // (otherwise admission_id simply stays NULL)
-            if (($validated['admit_patient'] ?? '0') === '1') {
-                $this->admitPatient($prescription, $validated['admission']);
             }
         });
 
@@ -171,9 +161,6 @@ class PrescriptionController extends Controller
             ->map(fn($row) => ['test_id' => $row->test_id])
             ->values();
 
-        $wards = Ward::orderBy('name')->get();
-        $beds = Bed::where('status', 'Available')->get();
-
         return view('admin.pages.prescription.edit', compact(
             'prescription',
             'patients',
@@ -183,9 +170,7 @@ class PrescriptionController extends Controller
             'labTests',
             'appointmentMap',
             'existingMedicineRows',
-            'existingLabTestRows',
-            'wards',
-            'beds'
+            'existingLabTestRows'
         ));
     }
 
@@ -200,6 +185,7 @@ class PrescriptionController extends Controller
             'appointment_id' => 'nullable|exists:appointments,id',
             'prescription_date' => 'required|date',
             'notes' => 'nullable|string',
+            'admission_advised' => 'nullable|boolean',
             'medicines' => 'nullable|array',
             'medicines.*.medicine_id' => 'required_with:medicines|exists:medicines,id',
             'medicines.*.dosage' => 'nullable|string|max:100',
@@ -207,12 +193,18 @@ class PrescriptionController extends Controller
             'medicines.*.instructions' => 'nullable|string',
             'lab_tests' => 'nullable|array',
             'lab_tests.*.test_id' => 'required_with:lab_tests|exists:lab_tests,id',
-        ] + $this->admissionRules($request));
+        ]);
 
-        DB::transaction(function () use ($validated, $prescription) {
-            $prescription->update(
-                collect($validated)->except(['medicines', 'lab_tests', 'admit_patient', 'admission'])->toArray()
-            );
+        DB::transaction(function () use ($validated, $request, $prescription) {
+            $data = collect($validated)->except(['medicines', 'lab_tests'])->toArray();
+
+            // Once the receptionist has admitted the patient, the suggestion
+            // stays "true" (the form no longer shows the radio buttons).
+            $data['admission_advised'] = $prescription->admission_id
+                ? true
+                : $request->boolean('admission_advised');
+
+            $prescription->update($data);
 
             // Replace the medicine list with whatever was submitted this time
             $prescription->prescriptionMedicines()->delete();
@@ -229,12 +221,6 @@ class PrescriptionController extends Controller
                     'status' => 'Pending',
                     'order_date' => $prescription->prescription_date,
                 ]);
-            }
-
-            // Admit only if not already admitted from this prescription.
-            // (Managing an existing admission is done from the Admissions page.)
-            if (is_null($prescription->admission_id) && ($validated['admit_patient'] ?? '0') === '1') {
-                $this->admitPatient($prescription, $validated['admission']);
             }
         });
 
@@ -253,66 +239,6 @@ class PrescriptionController extends Controller
         return redirect()
             ->route('prescriptions.index')
             ->with('success', 'Prescription deleted successfully.');
-    }
-
-    /**
-     * Validation rules for the optional "admit patient" section.
-     */
-    private function admissionRules(Request $request): array
-    {
-        return [
-            'admit_patient' => 'nullable|in:0,1',
-            'admission.ward_id' => 'required_if:admit_patient,1|nullable|exists:wards,id',
-            'admission.bed_id' => [
-                'required_if:admit_patient,1',
-                'nullable',
-                Rule::exists('beds', 'id')->where(fn($q) => $q
-                    ->where('status', 'Available')
-                    ->where('ward_id', $request->input('admission.ward_id'))),
-            ],
-            'admission.admission_date' => 'required_if:admit_patient,1|nullable|date',
-        ];
-    }
-
-    /**
-     * Create an Admission from this prescription, occupy the bed
-     * and link it via prescriptions.admission_id.
-     * Must be called inside a DB transaction.
-     */
-    private function admitPatient(Prescription $prescription, array $data): void
-    {
-        // A patient can only have ONE active admission at a time
-        $alreadyAdmitted = Admission::where('patient_id', $prescription->patient_id)
-            ->where('status', 'Admitted')
-            ->exists();
-
-        if ($alreadyAdmitted) {
-            throw ValidationException::withMessages([
-                'admit_patient' => 'This patient is already admitted. Discharge the current admission first.',
-            ]);
-        }
-
-        // Lock the bed so two doctors can't take the same bed at once
-        $bed = Bed::whereKey($data['bed_id'])->lockForUpdate()->first();
-
-        if (! $bed || $bed->status !== 'Available') {
-            throw ValidationException::withMessages([
-                'admission.bed_id' => 'This bed was just taken. Please choose another bed.',
-            ]);
-        }
-
-        $admission = Admission::create([
-            'patient_id' => $prescription->patient_id,
-            'doctor_id' => $prescription->doctor_id,
-            'ward_id' => $data['ward_id'],
-            'bed_id' => $bed->id,
-            'admission_date' => $data['admission_date'],
-            'status' => 'Admitted',
-        ]);
-
-        $bed->update(['status' => 'Occupied']);
-
-        $prescription->update(['admission_id' => $admission->id]);
     }
 
 
@@ -336,24 +262,22 @@ class PrescriptionController extends Controller
         $invoice->status = $invoice->status ?? 'Unpaid';
         $invoice->save();
 
-        // Remove previously auto-generated items first so re-generating
-        // (e.g. after editing the prescription) doesn't create duplicates.
-        // Manually added "Other" items on the invoice are left untouched.
+        
         $invoice->items()->whereIn('item_type', ['Consultation Fee', 'Lab Test', 'Medicine'])->delete();
 
         $isAdmitted = (bool) $prescription->admission_id;
 
-        // Consultation fee + Medicines — only billed when the patient is admitted (IPD)
-        if ($isAdmitted) {
-            if ($prescription->doctor && $prescription->doctor->consultation_fee) {
-                $invoice->items()->create([
-                    'item_type' => 'Consultation Fee',
-                    'item_reference_id' => $prescription->doctor_id,
-                    'description' => 'Consultation — Dr. ' . ($prescription->doctor->user->name ?? 'N/A'),
-                    'amount' => $prescription->doctor->consultation_fee,
-                ]);
-            }
+        if ($prescription->doctor && $prescription->doctor->consultation_fee) {
+            $invoice->items()->create([
+                'item_type' => 'Consultation Fee',
+                'item_reference_id' => $prescription->doctor_id,
+                'description' => 'Consultation — Dr. ' . ($prescription->doctor->user->name ?? 'N/A'),
+                'amount' => $prescription->doctor->consultation_fee,
+            ]);
+        }
 
+        
+        if ($isAdmitted) {
             foreach ($prescription->medicines as $medicine) {
                 $invoice->items()->create([
                     'item_type' => 'Medicine',
@@ -364,9 +288,9 @@ class PrescriptionController extends Controller
             }
         }
 
-        // Lab Tests — always billed regardless of admission status
+        // Lab tests ordered by the doctor — always billed (cancelled ones are skipped)
         foreach ($prescription->labTestOrders as $order) {
-            if ($order->test) {
+            if ($order->test && $order->status !== 'Cancelled') {
                 $invoice->items()->create([
                     'item_type' => 'Lab Test',
                     'item_reference_id' => $order->test_id,

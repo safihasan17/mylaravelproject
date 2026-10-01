@@ -1,4 +1,4 @@
- @extends('admin.layouts.master')
+@extends('admin.layouts.master')
 
  @section('title', 'Admissions - Create')
 
@@ -27,13 +27,30 @@
                  <div class="card-body">
                      <form action="{{ route('admissions.store') }}" method="POST">
                          @csrf
+
+                         @isset($prescription)
+                             <input type="hidden" name="prescription_id" value="{{ $prescription->id }}">
+                             <div class="alert alert-info">
+                                 Admission suggested by
+                                 <strong>Dr. {{ $prescription->doctor->user->name ?? 'N/A' }}</strong>
+                                 in prescription
+                                 <strong>RX-{{ str_pad($prescription->id, 4, '0', STR_PAD_LEFT) }}</strong>
+                                 for <strong>{{ $prescription->patient->name ?? 'N/A' }}</strong>.
+                                 Choose the ward &amp; bed below.
+                             </div>
+                         @endisset
+
                          <div class="row">
                              <div class="col-md-6 mb-4">
                                  <label class="form-label" for="ad-patient">Patient</label>
-                                 <select class="form-select" name="patient_id">
+                                 {{-- locked when coming from a prescription (hidden input sends the value) --}}
+                                 @isset($prescription)
+                                     <input type="hidden" name="patient_id" value="{{ $prescription->patient_id }}">
+                                 @endisset
+                                 <select class="form-select" name="patient_id" @disabled(isset($prescription))>
                                      <option value="" selected disabled>Select Patient</option>
                                      @foreach ($patients as $patient)
-                                         <option value="{{ $patient->id }}" @selected(old('patient_id') == $patient->id)>
+                                         <option value="{{ $patient->id }}" @selected(old('patient_id', $prescription->patient_id ?? null) == $patient->id)>
                                              {{ $patient->name }}</option>
                                      @endforeach
                                  </select>
@@ -44,7 +61,7 @@
                                  <select class="form-select" name="doctor_id">
                                      <option value="" selected disabled>Select Doctor</option>
                                      @foreach ($doctors as $doctor)
-                                         <option value="{{ $doctor->id }}" @selected(old('doctor_id') == $doctor->id)>
+                                         <option value="{{ $doctor->id }}" @selected(old('doctor_id', $prescription->doctor_id ?? null) == $doctor->id)>
                                              {{ $doctor->user->name ?? 'N/A' }} &mdash;
                                              {{ $doctor->specialization }}</option>
                                      @endforeach

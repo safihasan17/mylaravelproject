@@ -88,17 +88,17 @@
                                                     <a class="fw-semibold"
                                                         href="{{ route('prescriptions.show', $item->id) }}">{{ $item->patient->name ?? 'N/A' }}</a>
                                                 </td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->doctor->user->name ?? 'N/A' }}</td>
-                                                <td class="d-none d-md-table-cell text-center">{{ $item->prescription_date?->format('d M Y') }}</td>
+                                                <td class="d-none d-sm-table-cell text-center">
+                                                    {{ $item->doctor->user->name ?? 'N/A' }}</td>
                                                 <td class="d-none d-md-table-cell text-center">
-                                                    @if ($item->admission)
-                                                        <a href="{{ route('admissions.show', $item->admission_id) }}"
-                                                            class="badge bg-{{ ['Admitted' => 'danger', 'Discharged' => 'success', 'Transferred' => 'info'][$item->admission->status] ?? 'secondary' }}">{{ $item->admission->status }}</a>
-                                                    @else
-                                                        <span class="text-muted">&mdash;</span>
-                                                    @endif
+                                                    {{ $item->prescription_date?->format('d M Y') }}</td>
+                                                <td class="d-none d-md-table-cell text-center">
+                                                    @include('admin.pages.prescription._admission-status', [
+                                                        'prescription' => $item,
+                                                    ])
                                                 </td>
-                                                <td class="d-none d-xl-table-cell fs-sm">{{ \Illuminate\Support\Str::limit($item->notes, 60) }}</td>
+                                                <td class="d-none d-xl-table-cell fs-sm">
+                                                    {{ \Illuminate\Support\Str::limit($item->notes, 60) }}</td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
 
@@ -159,8 +159,7 @@
                 @method('DELETE')
                 <button type="button" class="btn btn-outline-secondary" title="Delete row"
                     data-bs-dismiss="modal">cancel</button>
-                <button type="submit" class="btn  btn-danger" title="Delete row"
-                    data-bs-dismiss="modal">Delete</button>
+                <button type="submit" class="btn  btn-danger" title="Delete row" data-bs-dismiss="modal">Delete</button>
             </form>
 
         </div>
@@ -170,17 +169,18 @@
 
 @section('script')
 
-<script>
-document.querySelectorAll('.delete').forEach(button=>{
-    button.addEventListener('click', function(){
-        let id = this.dataset.id;
-        let name = this.dataset.name;
+    <script>
+        document.querySelectorAll('.delete').forEach(button => {
+            button.addEventListener('click', function() {
+                let id = this.dataset.id;
+                let name = this.dataset.name;
 
-        document.querySelector('#modalDelete .name').innerText = name;
-        document.querySelector('#modalDelete form').action = `{{ route('prescriptions.destroy' , ['prescription'=>':id']) }}` .replace(':id', id);
+                document.querySelector('#modalDelete .name').innerText = name;
+                document.querySelector('#modalDelete form').action =
+                    `{{ route('prescriptions.destroy', ['prescription' => ':id']) }}`.replace(':id', id);
 
-    })
-})
-</script>
+            })
+        })
+    </script>
 
 @endsection

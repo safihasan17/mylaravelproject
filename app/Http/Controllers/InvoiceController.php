@@ -125,4 +125,41 @@ class InvoiceController extends Controller
             ->route('invoices.index')
             ->with('success', 'Invoice deleted successfully.');
     }
+
+    /**
+     * Doctor-fee invoice created straight from an appointment
+     * (patient came, saw the doctor, no tests / admission).
+     * Calling it again does not duplicate the fee.
+     */
+    public function fromAppointment(Appointment $appointment)
+    {
+        $appointment->load('doctor.user');
+
+        $invoice = Invoice::firstOrNew(['appointment_id' => $appointment->id]);
+
+        if (! $invoice->exists) {
+            $invoice->patient_id = $appointment->patient_id;
+            $invoice->invoice_date = $appointment->appointment_date ?? now();
+            $invoice->status = 'Unpaid';
+            $invoice->total_amount = 0;
+            $invoice->save();
+        }
+
+        $fee = $appointment->doctor?->consultation_fee;
+
+        if ($fee && ! $invoice->items()->where('item_type', 'Consultation Fee')->exists()) {
+            $invoice->items()->create([
+                'item_type' => 'Consultation Fee',
+                'item_reference_id' => $appointment->doctor_id,
+                'description' => 'Consultation — Dr. ' . ($appointment->doctor->user->name ?? 'N/A'),
+                'amount' => $fee,
+            ]);
+        }
+
+        $invoice->update(['total_amount' => $invoice->items()->sum('amount')]);
+
+        return redirect()
+            ->route('invoices.show', $invoice->id)
+            ->with('success', 'Doctor fee invoice is ready to print.');
+    }
 }

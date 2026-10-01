@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Doctor;
 use App\Models\LabTest;
+use App\Models\Invoice;
 use App\Models\LabTestOrder;
 use App\Models\Patient;
 use Illuminate\Http\Request;
@@ -119,5 +120,56 @@ class LabTestOrderController extends Controller
         return redirect()
             ->route('lab-test-orders.index')
             ->with('success', 'Lab test order deleted successfully.');
+    }
+
+    
+    public function generateInvoice(LabTestOrder $labTestOrder)
+    {
+        if ($labTestOrder->prescription_id) {
+            return back()->with('error', 'This test belongs to a prescription. Generate the invoice from the prescription.');
+        }
+
+        if ($labTestOrder->status === 'Cancelled') {
+            return back()->with('error', 'A cancelled test cannot be billed.');
+        }
+
+        $labTestOrder->load('test');
+
+       
+        $invoice = Invoice::where('patient_id', $labTestOrder->patient_id)
+            ->whereNull('admission_id')
+            ->whereNull('appointment_id')
+            ->whereDate('invoice_date', today())
+            ->where('status', 'Unpaid')
+            ->first();
+
+        if (! $invoice) {
+            $invoice = Invoice::create([
+                'patient_id' => $labTestOrder->patient_id,
+                'invoice_date' => today(),
+                'status' => 'Unpaid',
+                'total_amount' => 0,
+            ]);
+        }
+
+        $alreadyBilled = $invoice->items()
+            ->where('item_type', 'Lab Test')
+            ->where('item_reference_id', $labTestOrder->test_id)
+            ->exists();
+
+        if (! $alreadyBilled) {
+            $invoice->items()->create([
+                'item_type' => 'Lab Test',
+                'item_reference_id' => $labTestOrder->test_id,
+                'description' => $labTestOrder->test->test_name ?? 'Lab Test',
+                'amount' => $labTestOrder->test->price ?? 0,
+            ]);
+        }
+
+        $invoice->update(['total_amount' => $invoice->items()->sum('amount')]);
+
+        return redirect()
+            ->route('invoices.show', $invoice->id)
+            ->with('success', 'Test invoice is ready to print.');
     }
 }

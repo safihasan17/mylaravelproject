@@ -93,9 +93,12 @@
                                                     <a class="fw-semibold"
                                                         href="{{ route('lab-test-orders.show', $item->id) }}">{{ $item->patient->name ?? 'N/A' }}</a>
                                                 </td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->test->test_name ?? 'N/A' }}</td>
-                                                <td class="d-none d-sm-table-cell text-center">{{ $item->doctor->user->name ?? 'N/A' }}</td>
-                                                <td class="d-none d-md-table-cell text-center">{{ $item->order_date?->format('d M Y') }}</td>
+                                                <td class="d-none d-sm-table-cell text-center">
+                                                    {{ $item->test->test_name ?? 'N/A' }}</td>
+                                                <td class="d-none d-sm-table-cell text-center">
+                                                    {{ $item->doctor->user->name ?? 'N/A' }}</td>
+                                                <td class="d-none d-md-table-cell text-center">
+                                                    {{ $item->order_date?->format('d M Y') }}</td>
                                                 <td class="text-center">
                                                     @php
                                                         $statusColors = [
@@ -128,6 +131,17 @@
                                                             data-bs-toggle="modal" data-bs-target="#modalDelete">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
+
+                                                        <form
+                                                            action="{{ route('lab-test-orders.generate-invoice', $item->id) }}"
+                                                            method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit"
+                                                                class="btn btn-sm btn-outline-success rounded"
+                                                                title="Generate invoice (this patient's all tests of this date)">
+                                                                <i class="fa fa-file-invoice"></i>
+                                                            </button>
+                                                        </form>
 
                                                     </div>
                                                 </td>
@@ -178,17 +192,19 @@
 
 @section('script')
 
-<script>
-document.querySelectorAll('.delete').forEach(button=>{
-    button.addEventListener('click', function(){
-        let id = this.dataset.id;
-        let name = this.dataset.name;
+    <script>
+        document.querySelectorAll('.delete').forEach(button => {
+            button.addEventListener('click', function() {
+                let id = this.dataset.id;
+                let name = this.dataset.name;
 
-        document.querySelector('#modalDelete .name').innerText = name;
-        document.querySelector('#modalDelete form').action = `{{ route('lab-test-orders.destroy' , ['lab_test_order'=>':id']) }}` .replace(':id', id);
+                document.querySelector('#modalDelete .name').innerText = name;
+                document.querySelector('#modalDelete form').action =
+                    `{{ route('lab-test-orders.destroy', ['lab_test_order' => ':id']) }}`.replace(':id',
+                    id);
 
-    })
-})
-</script>
+            })
+        })
+    </script>
 
 @endsection

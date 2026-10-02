@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\LabTestOrder;
 use App\Models\Patient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LabTestOrderController extends Controller
 {
@@ -47,20 +48,32 @@ class LabTestOrderController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store newly created resources in storage (one order per selected test).
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'doctor_id' => 'required|exists:doctors,id',
-            'test_id' => 'required|exists:lab_tests,id',
-            'status' => 'required|in:Pending,In Progress,Completed,Cancelled',
-            'result' => 'nullable|string',
+            'doctor_id'  => 'required|exists:doctors,id',
+            'status'     => 'required|in:Pending,In Progress,Completed,Cancelled',
+            'result'     => 'nullable|string',
             'order_date' => 'required|date',
+            'lab_tests'  => 'required|array|min:1',
+            'lab_tests.*.test_id' => 'required|distinct|exists:lab_tests,id',
         ]);
 
-        LabTestOrder::create($validated);
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['lab_tests'] as $row) {
+                LabTestOrder::create([
+                    'patient_id' => $validated['patient_id'],
+                    'doctor_id'  => $validated['doctor_id'],
+                    'test_id'    => $row['test_id'],
+                    'status'     => $validated['status'],
+                    'result'     => $validated['result'] ?? null,
+                    'order_date' => $validated['order_date'],
+                ]);
+            }
+        });
 
         return redirect()
             ->route('lab-test-orders.index')
@@ -122,7 +135,7 @@ class LabTestOrderController extends Controller
             ->with('success', 'Lab test order deleted successfully.');
     }
 
-    
+
     public function generateInvoice(LabTestOrder $labTestOrder)
     {
         if ($labTestOrder->prescription_id) {
@@ -133,9 +146,14 @@ class LabTestOrderController extends Controller
             return back()->with('error', 'A cancelled test cannot be billed.');
         }
 
-        $labTestOrder->load('test');
+        // Ei patient-er ei tarikher shob test (cancelled/prescription-er bade) ekshathe
+        $orders = LabTestOrder::with('test')
+            ->where('patient_id', $labTestOrder->patient_id)
+            ->whereDate('order_date', $labTestOrder->order_date->toDateString())
+            ->whereNull('prescription_id')
+            ->where('status', '!=', 'Cancelled')
+            ->get();
 
-       
         $invoice = Invoice::where('patient_id', $labTestOrder->patient_id)
             ->whereNull('admission_id')
             ->whereNull('appointment_id')
@@ -152,18 +170,20 @@ class LabTestOrderController extends Controller
             ]);
         }
 
-        $alreadyBilled = $invoice->items()
-            ->where('item_type', 'Lab Test')
-            ->where('item_reference_id', $labTestOrder->test_id)
-            ->exists();
+        foreach ($orders as $order) {
+            $alreadyBilled = $invoice->items()
+                ->where('item_type', 'Lab Test')
+                ->where('item_reference_id', $order->test_id)
+                ->exists();
 
-        if (! $alreadyBilled) {
-            $invoice->items()->create([
-                'item_type' => 'Lab Test',
-                'item_reference_id' => $labTestOrder->test_id,
-                'description' => $labTestOrder->test->test_name ?? 'Lab Test',
-                'amount' => $labTestOrder->test->price ?? 0,
-            ]);
+            if (! $alreadyBilled) {
+                $invoice->items()->create([
+                    'item_type' => 'Lab Test',
+                    'item_reference_id' => $order->test_id,
+                    'description' => $order->test->test_name ?? 'Lab Test',
+                    'amount' => $order->test->price ?? 0,
+                ]);
+            }
         }
 
         $invoice->update(['total_amount' => $invoice->items()->sum('amount')]);

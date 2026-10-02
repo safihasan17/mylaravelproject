@@ -72,7 +72,7 @@ Route::middleware('auth', 'role_id:1,3')->group(function () {
         ->name('lab-test-orders.generate-invoice');
 });
 
-// ---------------- 4) ADMIN + DOCTOR + RECEPTIONIST: shared (shudhu dekha) ----------------
+// ---------------- 4) ADMIN + DOCTOR + RECEPTIONIST: 
 Route::middleware('auth', 'role_id:1,2,3')->group(function () {
 
     Route::resource('appointments', AppointmentController::class);

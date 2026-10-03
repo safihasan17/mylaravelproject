@@ -53,12 +53,11 @@ class InvoiceController extends Controller
             'admission_id' => 'nullable|exists:admissions,id',
             'appointment_id' => 'nullable|exists:appointments,id',
             'total_amount' => 'required|numeric|min:0',
-            'paid_amount' => 'nullable|numeric|min:0',
-            'status' => 'required|in:Unpaid,Partially Paid,Paid,Cancelled',
             'invoice_date' => 'required|date',
         ]);
 
-        Invoice::create($validated);
+        // Paid amount / status come from Payments, never typed by hand.
+        Invoice::create($validated + ['paid_amount' => 0, 'status' => 'Unpaid']);
 
         return redirect()
             ->route('invoices.index')
@@ -70,7 +69,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
-        $invoice->load(['patient', 'admission.ward', 'admission.bed', 'appointment.doctor.user']);
+        $invoice->load(['patient', 'admission.ward', 'admission.bed', 'appointment.doctor.user', 'payments.receiver']);
 
         return view('admin.pages.invoice.show', compact('invoice'));
     }
@@ -101,13 +100,23 @@ class InvoiceController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'admission_id' => 'nullable|exists:admissions,id',
             'appointment_id' => 'nullable|exists:appointments,id',
-            'total_amount' => 'required|numeric|min:0',
-            'paid_amount' => 'nullable|numeric|min:0',
-            'status' => 'required|in:Unpaid,Partially Paid,Paid,Cancelled',
+            // total can never drop below what has already been paid
+            'total_amount' => 'required|numeric|min:' . max(0, (float) $invoice->paid_amount),
+            'status' => 'nullable|in:Active,Cancelled',
             'invoice_date' => 'required|date',
         ]);
 
-        $invoice->update($validated);
+        $newStatus = $validated['status'] ?? null;
+        unset($validated['status']);
+
+        $invoice->fill($validated);
+
+        // Only the admin can cancel / re-open an invoice. Everything else is automatic.
+        if ($newStatus && auth()->user()->role_id == 1) {
+            $invoice->status = $newStatus === 'Cancelled' ? 'Cancelled' : 'Unpaid';
+        }
+
+        $invoice->save();
 
         return redirect()
             ->route('invoices.index')
@@ -119,6 +128,12 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice)
     {
+        if ($invoice->payments()->exists()) {
+            return redirect()
+                ->route('invoices.index')
+                ->with('error', 'This invoice has payment records. Delete its payments first (Payments page).');
+        }
+
         $invoice->delete();
 
         return redirect()

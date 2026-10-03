@@ -78,12 +78,12 @@
                                      value="{{ old('total_amount') }}" placeholder="e.g. 5000">
                                  <x-admin.error-msg name="total_amount" />
                              </div>
-                             <div class="col-md-4 mb-4">
-                                 <label class="form-label" for="inv-paid">Paid Amount (&#2547;)</label>
-                                 <input type="number" step="0.01" min="0" class="form-control" name="paid_amount"
-                                     value="{{ old('paid_amount', 0) }}" placeholder="e.g. 2000">
-                                 <x-admin.error-msg name="paid_amount" />
+                             <div class="col-md-8 mb-4">
+                                 <label class="form-label">Payment</label>
+                                 <div class="form-control-plaintext text-muted">New invoices start as <span class="badge bg-danger">Unpaid</span>.
+                                     Receive payments from the invoice page after saving.</div>
                              </div>
+                         </div>
                              <div class="col-md-4 mb-4">
                                  <label class="form-label" for="inv-status">Status</label>
                                  <select class="form-select" name="status">

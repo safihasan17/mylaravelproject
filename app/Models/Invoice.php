@@ -59,6 +59,40 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Status is always derived from paid vs total (a Cancelled invoice stays Cancelled
+     * until someone explicitly sets another status).
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Invoice $invoice) {
+            if ($invoice->status === 'Cancelled') {
+                return;
+            }
+
+            $paid = (float) $invoice->paid_amount;
+            $total = (float) $invoice->total_amount;
+
+            $invoice->status = $paid <= 0
+                ? 'Unpaid'
+                : ($paid >= $total ? 'Paid' : 'Partially Paid');
+        });
+    }
+
+    /**
+     * paid_amount = sum of all successful payments (status follows automatically).
+     */
+    public function syncPayments(): void
+    {
+        $this->paid_amount = (float) $this->payments()->where('status', 'Success')->sum('amount');
+        $this->save();
+    }
+
     /**
      * Amount still owed on this invoice.
      */

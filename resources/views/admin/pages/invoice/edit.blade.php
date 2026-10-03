@@ -82,11 +82,23 @@
                                  <x-admin.error-msg name="total_amount" />
                              </div>
                              <div class="col-md-4 mb-4">
-                                 <label class="form-label" for="inv-paid">Paid Amount (&#2547;)</label>
-                                 <input type="number" step="0.01" min="0" class="form-control" name="paid_amount"
-                                     value="{{ old('paid_amount', $invoice->paid_amount) }}">
-                                 <x-admin.error-msg name="paid_amount" />
+                                 <label class="form-label">Paid Amount (&#2547;)</label>
+                                 <input type="text" class="form-control" value="{{ number_format($invoice->paid_amount, 2) }}" readonly disabled>
+                                 <div class="form-text">Calculated from payments. Receive payments on the invoice page.</div>
                              </div>
+                             <div class="col-md-4 mb-4">
+                                 <label class="form-label" for="inv-status">Status</label>
+                                 @if (auth()->user()->role_id == 1)
+                                     <select class="form-select" name="status">
+                                         <option value="Active" @selected(old('status', $invoice->status === 'Cancelled' ? 'Cancelled' : 'Active') == 'Active')>Active ({{ $invoice->status === 'Cancelled' ? 'auto' : $invoice->status }})</option>
+                                         <option value="Cancelled" @selected(old('status', $invoice->status === 'Cancelled' ? 'Cancelled' : 'Active') == 'Cancelled')>Cancelled</option>
+                                     </select>
+                                     <x-admin.error-msg name="status" />
+                                 @else
+                                     <input type="text" class="form-control" value="{{ $invoice->status }}" readonly disabled>
+                                 @endif
+                             </div>
+                         </div>
                              <div class="col-md-4 mb-4">
                                  <label class="form-label" for="inv-status">Status</label>
                                  <select class="form-select" name="status">

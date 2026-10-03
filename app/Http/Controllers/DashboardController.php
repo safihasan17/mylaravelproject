@@ -7,6 +7,7 @@ use App\Models\Bed;
 use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Patient;
+use App\Models\Payment;
 use App\Models\Ward;
 
 class DashboardController extends Controller
@@ -35,7 +36,11 @@ class DashboardController extends Controller
             ->whereMonth('invoice_date', now()->month);
 
         $monthBilled = (float) (clone $monthInvoices)->sum('total_amount');
-        $monthCollected = (float) (clone $monthInvoices)->sum('paid_amount');
+        // Money actually received this month (from the payments table)
+        $monthCollected = (float) Payment::where('status', 'Success')
+            ->whereYear('payment_date', now()->year)
+            ->whereMonth('payment_date', now()->month)
+            ->sum('amount');
         $collectedPercent = $monthBilled > 0 ? min(100, round($monthCollected / $monthBilled * 100)) : 0;
 
         $totalDue = (float) Invoice::whereIn('status', ['Unpaid', 'Partially Paid'])

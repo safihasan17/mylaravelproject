@@ -11,8 +11,10 @@ use App\Http\Controllers\LabTestOrderController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\MedicinePurchaseController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SslcommerzController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WardController;
@@ -87,6 +89,25 @@ Route::middleware('auth', 'role_id:1,2,3')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ---------------- PAYMENTS ----------------
+// SSLCommerz callbacks: called by the gateway/browser, so NO auth middleware here.
+// Safe because every callback is re-verified with SSLCommerz's server before money is recorded.
+Route::match(['get', 'post'], 'payments/sslcommerz/success', [SslcommerzController::class, 'success'])->name('sslcommerz.success');
+Route::match(['get', 'post'], 'payments/sslcommerz/fail', [SslcommerzController::class, 'fail'])->name('sslcommerz.fail');
+Route::match(['get', 'post'], 'payments/sslcommerz/cancel', [SslcommerzController::class, 'cancel'])->name('sslcommerz.cancel');
+Route::post('payments/sslcommerz/ipn', [SslcommerzController::class, 'ipn'])->name('sslcommerz.ipn');
+
+// Admin + Receptionist: take a payment (counter or online)
+Route::middleware('auth', 'role_id:1,3')->group(function () {
+    Route::post('invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('invoices.payments.store');
+    Route::post('invoices/{invoice}/pay-online', [SslcommerzController::class, 'initiate'])->name('invoices.pay-online');
+});
+
+// Admin only: see / edit / delete payments
+Route::middleware('auth', 'role_id:1')->group(function () {
+    Route::resource('payments', PaymentController::class)->only(['index', 'edit', 'update', 'destroy']);
 });
 
 // ---------------- PHARMACY: ADMIN + PHARMACIST (role 4): medicines, suppliers, purchases ----------------

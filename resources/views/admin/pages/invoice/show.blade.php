@@ -31,6 +31,32 @@
             @endif
 
             @php
+                $payMessages = [
+                    'success' => ['success', 'Online payment received successfully.'],
+                    'unverified' => [
+                        'warning',
+                        'Payment could not be verified yet. If money was deducted, check the Payments list shortly.',
+                    ],
+                    'failed' => ['danger', 'Online payment failed.'],
+                    'cancelled' => ['secondary', 'Online payment was cancelled.'],
+                ];
+                $payFlag = $payMessages[request('pay')] ?? null;
+            @endphp
+            @if ($payFlag)
+                <div class="alert alert-{{ $payFlag[0] }} alert-dismissible fade show no-print" role="alert">
+                    {{ $payFlag[1] }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show no-print" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+                </div>
+            @endif
+
+            @php
                 $statusColors = [
                     'Unpaid' => 'danger',
                     'Partially Paid' => 'warning',
@@ -40,7 +66,8 @@
                 $statusColor = $statusColors[$invoice->status] ?? 'secondary';
                 $dueAmount = $invoice->total_amount - $invoice->paid_amount;
 
-                $referredDoctor = $invoice->admission->doctor->user->name ?? $invoice->appointment->doctor->user->name ?? null;
+                $referredDoctor =
+                    $invoice->admission->doctor->user->name ?? ($invoice->appointment->doctor->user->name ?? null);
                 $patientAge = $invoice->patient->dob ? $invoice->patient->dob->age : null;
             @endphp
 
@@ -57,7 +84,8 @@
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <h4 class="mb-0">Invoice</h4>
                         <div class="text-end">
-                            <div class="fw-semibold">Invoice No: INV-{{ str_pad($invoice->id, 4, '0', STR_PAD_LEFT) }}</div>
+                            <div class="fw-semibold">Invoice No: INV-{{ str_pad($invoice->id, 4, '0', STR_PAD_LEFT) }}
+                            </div>
                             <div class="fs-sm text-muted">Date: {{ $invoice->invoice_date?->format('d M Y') }}</div>
                         </div>
                     </div>
@@ -183,20 +211,167 @@
                 </div>
             </div>
 
+            {{-- ================= PAYMENTS (not printed) ================= --}}
+            <div class="block block-rounded no-print">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Payments</h3>
+                </div>
+                <div class="block-content block-content-full">
+
+                    @if ($invoice->status !== 'Cancelled' && $dueAmount > 0)
+                        <div class="row g-4 mb-4">
+                            {{-- Counter payment --}}
+                            <div class="col-lg-7">
+                                <div class="border rounded p-3 h-100">
+                                    <h5 class="mb-3"><i class="fa fa-cash-register opacity-50 me-1"></i> Receive Payment
+                                    </h5>
+                                    <form action="{{ route('invoices.payments.store', $invoice->id) }}" method="POST">
+                                        @csrf
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <label class="form-label fs-sm">Amount (&#2547;)</label>
+                                                <input type="number" step="0.01" min="0.01"
+                                                    max="{{ $dueAmount }}" name="amount"
+                                                    class="form-control form-control-sm"
+                                                    value="{{ old('amount', $dueAmount) }}">
+                                                <x-admin.error-msg name="amount" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fs-sm">Method</label>
+                                                <select name="payment_method" class="form-select form-select-sm">
+                                                    @foreach (\App\Models\Payment::METHODS as $m)
+                                                        <option value="{{ $m }}" @selected(old('payment_method', 'Cash') == $m)>
+                                                            {{ $m }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <x-admin.error-msg name="payment_method" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fs-sm">Date</label>
+                                                <input type="date" name="payment_date"
+                                                    class="form-control form-control-sm"
+                                                    value="{{ old('payment_date', now()->format('Y-m-d')) }}">
+                                                <x-admin.error-msg name="payment_date" />
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-success mt-3">
+                                            <i class="fa fa-check opacity-50 me-1"></i> Save Payment
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {{-- Online payment --}}
+                            <div class="col-lg-5">
+                                <div class="border rounded p-3 h-100">
+                                    <h5 class="mb-3"><i class="fa fa-credit-card opacity-50 me-1"></i> Pay Online</h5>
+                                    <p class="fs-sm text-muted mb-2">Card / bKash / Nagad / Rocket via SSLCommerz
+                                        @if (config('sslcommerz.sandbox'))
+                                            <span class="badge bg-warning">SANDBOX</span>
+                                        @endif
+                                    </p>
+                                    <form action="{{ route('invoices.pay-online', $invoice->id) }}" method="POST">
+                                        @csrf
+                                        <label class="form-label fs-sm">Amount (&#2547;)</label>
+                                        <input type="number" step="0.01" min="1" max="{{ $dueAmount }}"
+                                            name="amount" class="form-control form-control-sm"
+                                            value="{{ $dueAmount }}">
+                                        <button type="submit" class="btn btn-sm btn-primary mt-3">
+                                            <i class="fa fa-external-link-alt opacity-50 me-1"></i> Pay Online
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif ($invoice->status === 'Cancelled')
+                        <div class="alert alert-secondary">This invoice is cancelled. Payments cannot be taken.</div>
+                    @else
+                        <div class="alert alert-success">This invoice is fully paid.</div>
+                    @endif
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th class="fs-sm">Date</th>
+                                    <th class="text-center fs-sm">Method</th>
+                                    <th class="text-center fs-sm">Amount</th>
+                                    <th class="d-none d-md-table-cell text-center fs-sm">Transaction ID</th>
+                                    <th class="d-none d-md-table-cell text-center fs-sm">Received By</th>
+                                    <th class="text-center fs-sm">Status</th>
+                                    @if (auth()->user()->role_id == 1)
+                                        <th class="text-center fs-sm" style="width: 100px;">Actions</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($invoice->payments->sortByDesc('id') as $pay)
+                                    <tr>
+                                        <td>{{ $pay->payment_date?->format('d M Y') }}</td>
+                                        <td class="text-center">{{ $pay->payment_method }}</td>
+                                        <td class="text-center fw-semibold">&#2547;{{ number_format($pay->amount, 2) }}
+                                        </td>
+                                        <td class="d-none d-md-table-cell text-center fs-sm">
+                                            {{ $pay->transaction_id ?? '—' }}</td>
+                                        <td class="d-none d-md-table-cell text-center">{{ $pay->receiver->name ?? '—' }}
+                                        </td>
+                                        <td class="text-center"><span
+                                                class="badge bg-{{ $pay->status_color }}">{{ $pay->status }}</span></td>
+                                        @if (auth()->user()->role_id == 1)
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center gap-1">
+                                                    @unless ($pay->isGateway())
+                                                        <a href="{{ route('payments.edit', $pay->id) }}"
+                                                            class="btn btn-sm btn-outline-warning rounded" title="Edit"><i
+                                                                class="fa fa-pencil-alt"></i></a>
+                                                    @endunless
+                                                    <form action="{{ route('payments.destroy', $pay->id) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Delete this payment? The invoice will be recalculated.{{ $pay->isGateway() && $pay->status === 'Success' ? ' This does NOT refund the customer at the gateway.' : '' }}')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-outline-danger rounded"
+                                                            title="Delete"><i class="fa fa-trash"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        @endif
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ auth()->user()->role_id == 1 ? 7 : 6 }}"
+                                            class="text-center text-muted">No payments yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
         <!-- END Page Content -->
     </main>
 
     <style>
         @media print {
-            #page-header, #sidebar, #page-footer, .no-print {
+
+            #page-header,
+            #sidebar,
+            #page-footer,
+            .no-print {
                 display: none !important;
             }
-            #page-container, #main-container, #inv-print-area {
+
+            #page-container,
+            #main-container,
+            #inv-print-area {
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
             }
+
             .block {
                 box-shadow: none !important;
                 border: none !important;

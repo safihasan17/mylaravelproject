@@ -73,13 +73,13 @@
                                             Receptionist
                                         </button>
 
-                                        <button type="button"
+                                        {{-- <button type="button"
                                                 class="btn btn-primary role-login-btn"
-                                                data-email="disabled.user4@example.invalid">
+                                                data-email="emmerich.leanne@example.org">
                                             Pharmacist
                                         </button>
 
-                                        {{-- <button type="button"
+                                        <button type="button"
                                                 class="btn btn-primary role-login-btn"
                                                 data-email="larson.kyla@example.net">
                                             Lab Technician

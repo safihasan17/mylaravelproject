@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
          $middleware->append(PreventBrowserCache::class);
+         // SSLCommerz POSTs back to these URLs without a CSRF token
+         $middleware->validateCsrfTokens(except: ['payments/sslcommerz/*']);
          $middleware->alias([
         'role_id' => RoleMiddleware::class,
     ]);

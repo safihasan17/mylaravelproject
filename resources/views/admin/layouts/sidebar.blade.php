@@ -237,7 +237,7 @@
 
 
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="">
+                        <a class="nav-main-link" href="{{ route('roles.index') }}">
                             <i class="nav-main-link-icon fa fa-user-shield"></i>
                             <span class="nav-main-link-name">Role</span>
                         </a>
@@ -309,18 +309,19 @@
                     <span class="nav-main-link-name">Billing / Invoices</span>
                 </a>
             </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('roles.index') }}">
+                    <i class="nav-main-link-icon fa fa-user-shield"></i>
+                    <span class="nav-main-link-name">Role</span>
+                </a>
+            </li>
         @endif
 
         {{-- pharmacist sidebar --}}
 
         @if (auth()->user()->role_id == 4)
             <li class="nav-main-heading">Pharmacy</li>
-            <li class="nav-main-item">
-                <a class="nav-main-link" href="{{ route('dashboard') }}">
-                    <i class="nav-main-link-icon fa fa-heartbeat"></i>
-                    <span class="nav-main-link-name">Dashboard</span>
-                </a>
-            </li>
+            
             <li class="nav-main-item">
                 <a class="nav-main-link" href="{{ route('medicines.index') }}">
                     <i class="nav-main-link-icon fa fa-pills"></i>

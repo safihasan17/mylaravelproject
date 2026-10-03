@@ -14,6 +14,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SslcommerzController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -33,6 +34,8 @@ Route::middleware('auth', 'role_id:1')->group(function () {
     Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
 
     Route::resource('users', UserController::class);
+    // Only admin can delete roles
+    Route::resource('roles', RoleController::class)->only(['destroy']);
     Route::resource('patients', PatientController::class);
     Route::resource('doctors', DoctorController::class);
     Route::resource('appointments', AppointmentController::class);
@@ -61,6 +64,9 @@ Route::middleware('auth', 'role_id:1,2')->group(function () {
 
 // ---------------- 3) ADMIN + RECEPTIONIST: patient, admission, test, invoice ----------------
 Route::middleware('auth', 'role_id:1,3')->group(function () {
+
+    // Roles: Admin + Receptionist can list, view, create and update (delete is admin only)
+    Route::resource('roles', RoleController::class)->except(['destroy']);
 
     Route::resource('patients', PatientController::class)->except(['show', 'destroy']);
     Route::resource('admissions', AdmissionController::class)->except(['destroy']);
@@ -91,13 +97,20 @@ Route::middleware('auth', 'role_id:1,2,3')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ---------------- PAYMENTS ----------------
-// SSLCommerz callbacks: called by the gateway/browser, so NO auth middleware here.
-// Safe because every callback is re-verified with SSLCommerz's server before money is recorded.
-Route::match(['get', 'post'], 'payments/sslcommerz/success', [SslcommerzController::class, 'success'])->name('sslcommerz.success');
-Route::match(['get', 'post'], 'payments/sslcommerz/fail', [SslcommerzController::class, 'fail'])->name('sslcommerz.fail');
-Route::match(['get', 'post'], 'payments/sslcommerz/cancel', [SslcommerzController::class, 'cancel'])->name('sslcommerz.cancel');
-Route::post('payments/sslcommerz/ipn', [SslcommerzController::class, 'ipn'])->name('sslcommerz.ipn');
+
+Route::withoutMiddleware([
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+   
+    \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+])->group(function () {
+    Route::match(['get', 'post'], 'payments/sslcommerz/success', [SslcommerzController::class, 'success'])->name('sslcommerz.success');
+    Route::match(['get', 'post'], 'payments/sslcommerz/fail', [SslcommerzController::class, 'fail'])->name('sslcommerz.fail');
+    Route::match(['get', 'post'], 'payments/sslcommerz/cancel', [SslcommerzController::class, 'cancel'])->name('sslcommerz.cancel');
+    Route::post('payments/sslcommerz/ipn', [SslcommerzController::class, 'ipn'])->name('sslcommerz.ipn');
+});
 
 // Admin + Receptionist: take a payment (counter or online)
 Route::middleware('auth', 'role_id:1,3')->group(function () {

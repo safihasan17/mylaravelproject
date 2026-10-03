@@ -20,8 +20,8 @@ class AppointmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_id'        => Patient::factory(),
-            'doctor_id'         => Doctor::factory(),
+           'patient_id'        => Patient::inRandomOrder()->value('id') ?? Patient::factory(),
+            'doctor_id'         => Doctor::inRandomOrder()->value('id') ?? Doctor::factory(),
             'appointment_date'  => $this->faker->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d'),
             'appointment_time'  => $this->faker->time('H:i:s'),
             'status'            => $this->faker->randomElement(['Scheduled', 'Checked-in', 'Waiting', 'Completed', 'Cancelled']),

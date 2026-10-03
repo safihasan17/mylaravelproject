@@ -46,7 +46,7 @@ class SslcommerzController extends Controller
             'gateway' => 'sslcommerz',
             'transaction_id' => $tranId,
             'status' => 'Pending',
-             'received_by' => auth()->id(),
+             'received_by' => auth::id(),
         ]);
 
         $response = $this->gateway->createSession([
@@ -84,22 +84,10 @@ class SslcommerzController extends Controller
     /** Browser comes back here after a successful payment (gateway POSTs, no login session needed). */
     public function success(Request $request)
     {
-        // dd([
-        //     'url' => $request->fullUrl(),
-        //     'method' => $request->method(),
-        //     'authenticated' => Auth::check(),
-        //     'user_id' => Auth::id(),
-        //     'role_id' => Auth::user()?->role_id,
-        //     'request_data' => $request->all(),
-        // ]);
-        // dd($request->all());
-        // $payment = $this->findPayment($request);
-        $payment = $request->tran_id;
+        $payment = $this->findPayment($request);
 
-        if ($payment) {
-            return redirect()->route('invoices.index')->with('success', "Payment has been completed!");
-        } else {
-            dd("not paid");
+        if (! $payment) {
+            return redirect()->route('dashboard');
         }
 
         $settled = $this->settle($request, $payment);
@@ -112,8 +100,6 @@ class SslcommerzController extends Controller
 
     public function fail(Request $request)
     {
-        dd($request->all());
-        // return redirect()->route()
         return $this->closePending($request, 'Failed', 'failed');
     }
 

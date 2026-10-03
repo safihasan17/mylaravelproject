@@ -185,9 +185,21 @@
                         </a>
                     </li>
                     <li class="nav-main-item">
-                        <a class="nav-main-link" href="hm_pharmacy.html">
+                        <a class="nav-main-link" href="{{ route('medicines.index') }}">
                             <i class="nav-main-link-icon fa fa-pills"></i>
                             <span class="nav-main-link-name">Pharmacy / Medicines</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('suppliers.index') }}">
+                            <i class="nav-main-link-icon fa fa-truck"></i>
+                            <span class="nav-main-link-name">Suppliers</span>
+                        </a>
+                    </li>
+                    <li class="nav-main-item">
+                        <a class="nav-main-link" href="{{ route('medicine-purchases.index') }}">
+                            <i class="nav-main-link-icon fa fa-boxes"></i>
+                            <span class="nav-main-link-name">Medicine Purchases</span>
                         </a>
                     </li>
                     <li class="nav-main-item">
@@ -289,6 +301,36 @@
                 <a class="nav-main-link" href="{{ route('invoices.index') }}">
                     <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
                     <span class="nav-main-link-name">Billing / Invoices</span>
+                </a>
+            </li>
+        @endif
+
+        {{-- pharmacist sidebar --}}
+
+        @if (auth()->user()->role_id == 4)
+            <li class="nav-main-heading">Pharmacy</li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('dashboard') }}">
+                    <i class="nav-main-link-icon fa fa-heartbeat"></i>
+                    <span class="nav-main-link-name">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('medicines.index') }}">
+                    <i class="nav-main-link-icon fa fa-pills"></i>
+                    <span class="nav-main-link-name">Pharmacy / Medicines</span>
+                </a>
+            </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('suppliers.index') }}">
+                    <i class="nav-main-link-icon fa fa-truck"></i>
+                    <span class="nav-main-link-name">Suppliers</span>
+                </a>
+            </li>
+            <li class="nav-main-item">
+                <a class="nav-main-link" href="{{ route('medicine-purchases.index') }}">
+                    <i class="nav-main-link-icon fa fa-boxes"></i>
+                    <span class="nav-main-link-name">Medicine Purchases</span>
                 </a>
             </li>
         @endif

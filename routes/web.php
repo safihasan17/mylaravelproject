@@ -3,13 +3,17 @@
 use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\BedController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceItemController;
 use App\Http\Controllers\LabTestOrderController;
+use App\Http\Controllers\MedicineController;
+use App\Http\Controllers\MedicinePurchaseController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WardController;
 use Illuminate\Support\Facades\Route;
@@ -18,9 +22,7 @@ Route::get('/', function () {
     return view('admin.pages.auth.login');
 });
 
-Route::get('/dashboard', function () {
-    return view('admin.pages.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
 Route::middleware('auth', 'role_id:1')->group(function () {
@@ -81,6 +83,22 @@ Route::middleware('auth', 'role_id:1,2,3')->group(function () {
 
     Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
     Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ---------------- PHARMACY: ADMIN + PHARMACIST (role 4): medicines, suppliers, purchases ----------------
+Route::middleware('auth', 'role_id:1,4')->group(function () {
+
+    Route::resource('medicines', MedicineController::class);
+    Route::resource('suppliers', SupplierController::class);
+    Route::resource('medicine-purchases', MedicinePurchaseController::class);
+});
+
+// Pharmacist needs their own profile page
+Route::middleware('auth', 'role_id:4')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

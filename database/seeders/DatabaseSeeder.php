@@ -12,10 +12,12 @@ use App\Models\InvoiceItem;
 use App\Models\LabTest;
 use App\Models\LabTestOrder;
 use App\Models\Medicine;
+use App\Models\MedicinePurchase;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\PrescriptionMedicine;
 use App\Models\Role;
+use App\Models\Supplier;
 use App\Models\User;
 use App\Models\Ward;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -80,6 +82,10 @@ class DatabaseSeeder extends Seeder
         // Admission::factory(25)->create();
         // Invoice::factory(20)->create();
         // InvoiceItem::factory(20)->create();
+
+
+        Supplier::factory(30)->create();
+        MedicinePurchase::factory(30)->create();
 
 
 

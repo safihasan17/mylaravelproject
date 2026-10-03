@@ -2,20 +2,19 @@
 
 namespace App\Models;
 
-use Database\Factories\WardFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'floor', 'type'])]
-class Ward extends Model
+#[Fillable(['name', 'contact', 'address'])]
+class Supplier extends Model
 {
-    /** @use HasFactory<WardFactory> */
+    /** @use HasFactory<\Database\Factories\SupplierFactory> */
     use HasFactory;
 
-    public function beds(): HasMany
+    public function purchases(): HasMany
     {
-        return $this->hasMany(Bed::class);
+        return $this->hasMany(MedicinePurchase::class);
     }
 }

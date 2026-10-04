@@ -134,7 +134,6 @@
 
                     <li class="nav-main-heading">Hospital Management</li>
 
-
                     <li class="nav-main-item">
                         <a class="nav-main-link active" href="{{ route('dashboard') }}">
                             <i class="nav-main-link-icon fa fa-heartbeat"></i>
@@ -147,7 +146,6 @@
                             <span class="nav-main-link-name">Patients</span>
                         </a>
                     </li>
-
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="{{ route('doctors.index') }}">
                             <i class="nav-main-link-icon fa fa-user-md"></i>
@@ -160,48 +158,70 @@
                             <span class="nav-main-link-name">Appointments</span>
                         </a>
                     </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('wards.index') }}">
-                            <i class="nav-main-link-icon fa fa-procedures"></i>
-                            <span class="nav-main-link-name">Wards</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('beds.index') }}">
-                            <i class="nav-main-link-icon fa fa-procedures"></i>
-                            <span class="nav-main-link-name">Beds</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('admissions.index') }}">
+
+                    {{-- Admission (toggle menu) --}}
+                    <li
+                        class="nav-main-item {{ request()->routeIs('wards.*', 'beds.*', 'admissions.*') ? 'open' : '' }}">
+                        <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true"
+                            aria-expanded="{{ request()->routeIs('wards.*', 'beds.*', 'admissions.*') ? 'true' : 'false' }}"
+                            href="#">
                             <i class="nav-main-link-icon fa fa-procedures"></i>
                             <span class="nav-main-link-name">Admission</span>
                         </a>
+                        <ul class="nav-main-submenu">
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="{{ route('wards.index') }}">
+                                    <span class="nav-main-link-name">Wards</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="{{ route('beds.index') }}">
+                                    <span class="nav-main-link-name">Beds</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="{{ route('admissions.index') }}">
+                                    <span class="nav-main-link-name">Admission</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="{{ route('prescriptions.index') }}">
                             <i class="nav-main-link-icon fa fa-file-medical"></i>
                             <span class="nav-main-link-name">Prescriptions</span>
                         </a>
                     </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('medicines.index') }}">
+
+                    {{-- Pharmacy (toggle menu) --}}
+                    <li
+                        class="nav-main-item {{ request()->routeIs('medicines.*', 'suppliers.*', 'medicine-purchases.*') ? 'open' : '' }}">
+                        <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true"
+                            aria-expanded="{{ request()->routeIs('medicines.*', 'suppliers.*', 'medicine-purchases.*') ? 'true' : 'false' }}"
+                            href="#">
                             <i class="nav-main-link-icon fa fa-pills"></i>
-                            <span class="nav-main-link-name">Pharmacy / Medicines</span>
+                            <span class="nav-main-link-name">Pharmacy</span>
                         </a>
+                        <ul class="nav-main-submenu">
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="{{ route('medicines.index') }}">
+                                    <span class="nav-main-link-name">Medicines</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="{{ route('suppliers.index') }}">
+                                    <span class="nav-main-link-name">Suppliers</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" href="{{ route('medicine-purchases.index') }}">
+                                    <span class="nav-main-link-name">Medicine Purchases</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('suppliers.index') }}">
-                            <i class="nav-main-link-icon fa fa-truck"></i>
-                            <span class="nav-main-link-name">Suppliers</span>
-                        </a>
-                    </li>
-                    <li class="nav-main-item">
-                        <a class="nav-main-link" href="{{ route('medicine-purchases.index') }}">
-                            <i class="nav-main-link-icon fa fa-boxes"></i>
-                            <span class="nav-main-link-name">Medicine Purchases</span>
-                        </a>
-                    </li>
+
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="{{ route('lab-test-orders.index') }}">
                             <i class="nav-main-link-icon fa fa-flask"></i>
@@ -220,31 +240,24 @@
                             <span class="nav-main-link-name">Payments</span>
                         </a>
                     </li>
-
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="{{ route('invoice-items.index') }}">
                             <i class="nav-main-link-icon fa fa-file-invoice-dollar"></i>
                             <span class="nav-main-link-name">Invoice Item</span>
                         </a>
                     </li>
-
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="/users">
                             <i class="nav-main-link-icon fa fa-users"></i>
                             <span class="nav-main-link-name">Users</span>
                         </a>
                     </li>
-
-
                     <li class="nav-main-item">
                         <a class="nav-main-link" href="{{ route('roles.index') }}">
                             <i class="nav-main-link-icon fa fa-user-shield"></i>
                             <span class="nav-main-link-name">Role</span>
                         </a>
                     </li>
-
-
-
 
                 </ul>
             </div>
@@ -321,7 +334,7 @@
 
         @if (auth()->user()->role_id == 4)
             <li class="nav-main-heading">Pharmacy</li>
-            
+
             <li class="nav-main-item">
                 <a class="nav-main-link" href="{{ route('medicines.index') }}">
                     <i class="nav-main-link-icon fa fa-pills"></i>
